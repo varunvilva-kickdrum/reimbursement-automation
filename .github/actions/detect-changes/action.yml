@@ -1,0 +1,58 @@
+# Composite Action: Detect which directories (iac/, app/) have changes for CI
+# Outputs: iac_changed (true/false), app_changed (true/false)
+
+name: 'Detect Changed Directories'
+description: 'Detects which directories have changes for smart CI execution'
+
+outputs:
+  iac_changed:
+    description: 'Whether IAC directory has changes'
+    value: ${{ steps.detect.outputs.iac_changed }}
+  app_changed:
+    description: 'Whether App directory has changes'
+    value: ${{ steps.detect.outputs.app_changed }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Detect directory changes
+      id: detect
+      shell: bash
+      run: |
+        # === IAC DIRECTORY DETECTION ===
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "^iac/"; then
+            echo "iac_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "iac_changed=false" >> $GITHUB_OUTPUT
+          fi
+        else
+          if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            if git diff --name-only ${{ github.event.before }}..${{ github.event.after }} | grep -q "^iac/"; then
+              echo "iac_changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "iac_changed=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "iac_changed=true" >> $GITHUB_OUTPUT
+          fi
+        fi
+
+        # === APP DIRECTORY DETECTION ===
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "^app/"; then
+            echo "app_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "app_changed=false" >> $GITHUB_OUTPUT
+          fi
+        else
+          if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            if git diff --name-only ${{ github.event.before }}..${{ github.event.after }} | grep -q "^app/"; then
+              echo "app_changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "app_changed=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "app_changed=true" >> $GITHUB_OUTPUT
+          fi
+        fi

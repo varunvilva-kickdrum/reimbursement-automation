@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Smart router: run IAC hooks for iac/ changes, Python hooks for app/ changes
+
+staged_files=$(git diff --cached --name-only)
+[ -z "$staged_files" ] && exit 0
+
+iac_files=$(echo "$staged_files" | grep "^iac/" || true)
+app_files=$(echo "$staged_files" | grep "^app/" || true)
+
+exit_code=0
+
+if [ -n "$iac_files" ]; then
+  echo "→ Validating IAC files..."
+  (cd iac && .husky/pre-commit) || exit_code=1
+fi
+
+if [ -n "$app_files" ]; then
+  echo "→ Validating App (Python) files..."
+  (cd app && uv run pre-commit run --config .pre-commit-config.yaml) || exit_code=1
+fi
+
+[ $exit_code -eq 0 ] && echo "✓ All validations passed" || echo "✗ Validation failed — fix issues and commit again"
+exit $exit_code

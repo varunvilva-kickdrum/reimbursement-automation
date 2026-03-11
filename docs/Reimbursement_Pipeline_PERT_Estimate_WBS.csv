@@ -1,0 +1,26 @@
+,,,By Feature/Component/API,,,,,,Estimate Duration Units,,Hours,,,6,hrs/day,,,,,,,,,
+,,,,,,,,,,,,,,60,,,TOTAL HOURS:,,,,#REF!,#REF!,#REF!
+ID,IN/OUT,Category,Feature/Task,Dep,Phase,WorkType,Resource Type,Description,Assumptions/Questions,Alloc.,Opt,Likely,Pess,PERT,VAR,STD DEV,99%,,Optimistic,Likely,PERT 99%,Likely,PERT 99%,0%
+1,TRUE,Research & Design,Research & Design,,,,,,,,,,,,Feature Effort,,10 Hours,,,,,,,
+1,TRUE,Research & Design,Event-driven architecture and Keka integration (SQS EventBridge Step Functions webhook API usage),,,,,,,1.0,2.0,3.0,4.0,3.00,0.11,0.33,4,,2,3,4,#REF!,#REF!,#REF!
+1,TRUE,Research & Design,OCR and document processing workflow (PDFs receipts preprocessing),,,,,,,1.0,1.0,2.0,3.0,2.00,0.11,0.33,3,,1,2,3,#REF!,#REF!,#REF!
+1,TRUE,Research & Design,Validation rule structure (Google Sheets config confidence thresholds) scheduling and report design,,,,,,,1.0,2.0,3.0,4.0,3.00,0.11,0.33,4,,2,3,4,#REF!,#REF!,#REF!
+1,TRUE,Research & Design,Step Functions flow and retry design (low-confidence idempotency),,,,,,,1.0,1.0,2.0,3.0,2.00,0.11,0.33,3,,1,2,3,#REF!,#REF!,#REF!
+2,TRUE,Experimentation,Experimentation - OCR and Inference tools,,,,,,,,,,,,Feature Effort,,25 Hours,,,,,,,
+2,TRUE,Experimentation,OCR tool evaluation (Mistral vs Docling) and invoice number extraction across formats,,,,,,,1.0,5.0,8.0,12.0,8.17,1.36,1.17,12,,5,8,12,#REF!,#REF!,#REF!
+2,TRUE,Experimentation,LangExtract prompt and schema design (food cab gym) and food classification (valid vs blocked items),,,,,,,1.0,5.0,8.0,11.0,8.00,1.00,1.00,11,,5,8,11,#REF!,#REF!,#REF!
+2,TRUE,Experimentation,Geocoding evaluation (Google Maps API) and confidence thresholds (retry vs failed_verification),,,,,,,1.0,3.0,5.0,7.0,5.00,0.44,0.67,7,,3,5,7,#REF!,#REF!,#REF!
+2,TRUE,Experimentation,OCR and extraction improvement (prompt tuning fallbacks error handling),,,,,,,1.0,2.0,4.0,6.0,4.00,0.44,0.67,6,,2,4,6,#REF!,#REF!,#REF!
+3,TRUE,IaC,IaC,,,,,,,,,,,,Feature Effort,,12 Hours,,,,,,,
+3,TRUE,IaC,Foundation (remote state IAM roles policies env separation),,,,,,,1.0,2.0,3.0,4.0,3.00,0.11,0.33,4,,2,3,4,#REF!,#REF!,#REF!
+3,TRUE,IaC,Event ingestion and queueing (API Gateway Event Receiver Lambda SQS retention DLQ),,,,,,,1.0,2.0,3.0,5.0,3.17,0.25,0.50,5,,2,3,5,#REF!,#REF!,#REF!
+3,TRUE,IaC,Step Functions and processing pipeline (EOD trigger SQS consume Lambda invoke retries),,,,,,,1.0,2.0,3.0,5.0,3.17,0.25,0.50,5,,2,3,5,#REF!,#REF!,#REF!
+3,TRUE,IaC,Observability security (CloudWatch Secrets Manager encryption alerts),,,,,,,1.0,2.0,3.0,4.0,3.00,0.11,0.33,4,,2,3,4,#REF!,#REF!,#REF!
+4,TRUE,Config Management,Config Management,,,,,,,,,,,,Feature Effort,,3 Hours,,,,,,,
+4,TRUE,Config Management,Google Sheets API and Config Sync Lambda (Sheets to S3 JSON),,,,,,,1.0,1.0,2.0,2.0,1.83,0.03,0.17,3,,1,2,3,#REF!,#REF!,#REF!
+4,TRUE,Config Management,Config schema (holidays food cab gym rules) and EventBridge rule (month start),,,,,,,1.0,0.5,1.0,2.0,1.17,0.06,0.25,2,,0.5,1,2,#REF!,#REF!,#REF!
+5,TRUE,AI Validation and Testing,AI Validation and Testing,,,,,,,,,,,,Feature Effort,,10 Hours,,,,,,,
+5,TRUE,AI Validation and Testing,Validation rules (food cab gym caps working days food type) and config integration,,,,,,,1.0,2.0,3.0,5.0,3.17,0.25,0.50,5,,2,3,5,#REF!,#REF!,#REF!
+5,TRUE,AI Validation and Testing,Confidence routing and DynamoDB outcomes (valid invalid failed_verification),,,,,,,1.0,1.0,2.0,3.0,2.00,0.11,0.33,3,,1,2,3,#REF!,#REF!,#REF!
+5,TRUE,AI Validation and Testing,Report generation (read DynamoDB by period CSV/Excel) and SES delivery to HR,,,,,,,1.0,2.0,3.0,4.0,3.00,0.11,0.33,4,,2,3,4,#REF!,#REF!,#REF!
+5,TRUE,AI Validation and Testing,Gym re-upload logic and audit trail (reason codes),,,,,,,1.0,1.0,2.0,3.0,2.00,0.11,0.33,3,,1,2,3,#REF!,#REF!,#REF!
