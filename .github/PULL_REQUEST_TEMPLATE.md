@@ -1,4 +1,4 @@
-## Ticket : [ABC-123]()
+## Ticket : [ORGINIT-123](https://linear.app/kickdrum/issue/ORGINIT-123)
 
 ## Description
 

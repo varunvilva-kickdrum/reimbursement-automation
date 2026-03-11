@@ -1,0 +1,39 @@
+{
+  "app": "node dist/bin/app.js",
+  "watch": {
+    "include": ["**"],
+    "exclude": [
+      "README.md",
+      "cdk*.json",
+      "**/*.d.ts",
+      "**/*.js",
+      "tsconfig.json",
+      "package*.json",
+      "bun.lock",
+      "node_modules"
+    ]
+  },
+  "context": {
+    "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/core:target-partitions": ["aws", "aws-cn"],
+    "defaultRegion": "us-west-2",
+    "environments": {
+      "dev": {
+        "account": "REPLACE_WITH_DEV_ACCOUNT",
+        "region": "us-west-2",
+        "profile": "default"
+      },
+      "staging": {
+        "account": "REPLACE_WITH_STAGING_ACCOUNT",
+        "region": "us-west-2",
+        "profile": "staging"
+      },
+      "prod": {
+        "account": "REPLACE_WITH_PROD_ACCOUNT",
+        "region": "us-west-2",
+        "profile": "prod"
+      }
+    }
+  }
+}

@@ -12,13 +12,23 @@
     ]
   },
   "scripts": {
+    "build": "tsc",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy",
+    "diff": "cdk diff"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.170.0",
+    "constructs": "^10.4.2"
   },
   "devDependencies": {
+    "aws-cdk": "^2.170.0",
     "typescript": "^5.4.0",
     "@types/node": "^20.12.7",
     "eslint": "^9.0.0",

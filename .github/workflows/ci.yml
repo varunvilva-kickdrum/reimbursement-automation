@@ -48,6 +48,7 @@ jobs:
           cd iac
           bun run lint
           bun run format:check
+          bun run build
 
       - name: Run App checks
         if: steps.changes.outputs.app_changed == 'true'

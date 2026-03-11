@@ -8,6 +8,7 @@ coverage/
 # CDK
 cdk.out/
 cdk.context.json
+.build/
 
 # TypeScript
 *.js

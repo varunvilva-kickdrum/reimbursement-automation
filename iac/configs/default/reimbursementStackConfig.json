@@ -1,0 +1,18 @@
+{
+  "lambda": {
+    "functionsPath": "app/lambda/src",
+    "buildDirectory": ".build",
+    "defaultTimeout": 30,
+    "defaultMemorySize": 128,
+    "functions": [
+      {
+        "name": "test_lambda",
+        "timeout": 30,
+        "memorySize": 128
+      }
+    ]
+  },
+  "stepFunction": {
+    "enabled": false
+  }
+}

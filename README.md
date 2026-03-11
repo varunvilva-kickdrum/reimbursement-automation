@@ -28,4 +28,4 @@ Example: `[ORGINIT-42][feat] Add login endpoint`
 - **CI** (`.github/workflows/ci.yml`): runs on every push and PR. Only runs IAC or App checks when files under `iac/` or `app/` change. Uses Bun (IAC) and uv (App).
 - **CD** (`.github/workflows/deploy.yml`): deploys to dev/staging on push to those branches; production via manual workflow dispatch.
 
-CI is already configured; it runs automatically when you push to GitHub.
+CI runs automatically when you push. For **CD**, GitHub Actions needs AWS credentials (IAM user keys or OIDC role). See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for setup.
