@@ -13,35 +13,30 @@ The CD pipeline (`.github/workflows/deploy.yml`) deploys the reimbursement stack
 
 ### Secrets required per environment
 
-For each environment you deploy to, the workflow expects these **secrets** (use repo secrets or environment secrets):
+For each environment you deploy to, the workflow expects these **secrets** (use repo secrets or environment secrets). Account ID is not needed; CDK resolves it from the credentials (like AdResults).
 
 | Secret name | Description |
 |-------------|-------------|
 | `AWS_ACCESS_KEY_ID_DEV` | IAM user access key ID (dev). |
 | `AWS_SECRET_ACCESS_KEY_DEV` | IAM user secret access key (dev). |
-| `AWS_ACCOUNT_ID_DEV` | AWS account ID, 12 digits (dev). |
 | `AWS_ACCESS_KEY_ID_STAGING` | Same for staging. |
 | `AWS_SECRET_ACCESS_KEY_STAGING` | Same for staging. |
-| `AWS_ACCOUNT_ID_STAGING` | Same for staging. |
 | `AWS_ACCESS_KEY_ID_PROD` | Same for production. |
 | `AWS_SECRET_ACCESS_KEY_PROD` | Same for production. |
-| `AWS_ACCOUNT_ID_PROD` | Same for production. |
 
 - **Dev**: used when the workflow runs on the `dev` branch.
 - **Staging**: used when the workflow runs on the `staging` branch.
 - **Production**: used when you trigger the workflow manually and choose `production`.
 
-If you use **GitHub Environments** (`dev`, `staging`, `production`), add the three secrets for that environment in **Settings → Environments → &lt;env&gt; → Environment secrets**. Otherwise, add them as **Repository secrets** with the names above.
+If you use **GitHub Environments** (`dev`, `staging`, `production`), add the two secrets per environment in **Settings → Environments → &lt;env&gt; → Environment secrets**. Otherwise, add them as **Repository secrets** with the names above.
 
 ### One-time: CDK bootstrap
 
-In each AWS account/region you deploy to, run once (with credentials that can create the bootstrap stack):
+In each AWS account/region you deploy to, run once (with credentials that can create the bootstrap stack). Get your account ID from the AWS console or run `aws sts get-caller-identity`:
 
 ```bash
-cd iac && bun run build && bunx cdk bootstrap aws://ACCOUNT_ID/us-west-2
+cd iac && bun run build && bunx cdk bootstrap aws://YOUR_ACCOUNT_ID/us-west-2
 ```
-
-Use the same `ACCOUNT_ID` as the corresponding `AWS_ACCOUNT_ID_*` secret.
 
 ---
 

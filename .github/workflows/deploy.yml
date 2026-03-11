@@ -47,7 +47,6 @@ jobs:
           cd iac
           bunx cdk deploy --all --context environment=dev --require-approval never
         env:
-          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID_DEV }}
           CDK_DEFAULT_REGION: us-west-2
 
   deploy_staging:
@@ -83,7 +82,6 @@ jobs:
           cd iac
           bunx cdk deploy --all --context environment=staging --require-approval never
         env:
-          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID_STAGING }}
           CDK_DEFAULT_REGION: us-west-2
 
   deploy_prod:
@@ -119,5 +117,4 @@ jobs:
           cd iac
           bunx cdk deploy --all --context environment=prod --require-approval never
         env:
-          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
           CDK_DEFAULT_REGION: us-west-2
