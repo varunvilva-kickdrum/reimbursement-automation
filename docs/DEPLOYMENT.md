@@ -11,24 +11,16 @@ The CD pipeline (`.github/workflows/deploy.yml`) deploys the reimbursement stack
 | **Settings → Secrets and variables → Actions** | Repository secrets (or environment-specific secrets; see below). |
 | **Settings → Environments** (optional) | Create environments `dev`, `staging`, `production` so you can use environment-specific secrets and protection rules. |
 
-### Secrets required per environment
+### Secrets required (repository secrets)
 
-For each environment you deploy to, the workflow expects these **secrets** (use repo secrets or environment secrets). Account ID is not needed; CDK resolves it from the credentials (like AdResults).
+For **dev** (push to `dev`), the workflow uses these **repository** secrets (no environment needed):
 
 | Secret name | Description |
 |-------------|-------------|
-| `AWS_ACCESS_KEY_ID_DEV` | IAM user access key ID (dev). |
-| `AWS_SECRET_ACCESS_KEY_DEV` | IAM user secret access key (dev). |
-| `AWS_ACCESS_KEY_ID_STAGING` | Same for staging. |
-| `AWS_SECRET_ACCESS_KEY_STAGING` | Same for staging. |
-| `AWS_ACCESS_KEY_ID_PROD` | Same for production. |
-| `AWS_SECRET_ACCESS_KEY_PROD` | Same for production. |
+| `AWS_ACCESS_KEY_ID` | IAM user access key ID. |
+| `AWS_SECRET_ACCESS_KEY` | IAM user secret access key. |
 
-- **Dev**: used when the workflow runs on the `dev` branch.
-- **Staging**: used when the workflow runs on the `staging` branch.
-- **Production**: used when you trigger the workflow manually and choose `production`.
-
-If you use **GitHub Environments** (`dev`, `staging`, `production`), add the two secrets per environment in **Settings → Environments → &lt;env&gt; → Environment secrets**. Otherwise, add them as **Repository secrets** with the names above.
+Add them under **Settings → Secrets and variables → Actions → Repository secrets**. Staging/prod can use `AWS_ACCESS_KEY_ID_STAGING` / `AWS_SECRET_ACCESS_KEY_STAGING` etc. when you add those jobs.
 
 ### One-time: CDK bootstrap
 
