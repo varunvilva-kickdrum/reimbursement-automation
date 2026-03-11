@@ -14,6 +14,19 @@ Monorepo for reimbursement pipeline: **app** (Python/Lambdas) and **iac** (CDK/T
 - **Root & IAC:** [Bun](https://bun.sh) — `bun install` at root and in `iac/`
 - **App:** [uv](https://docs.astral.sh/uv/) — `uv sync` in `app/`
 
+### Pre-commit hooks
+
+Hooks run lint/format on staged files (IAC: lint-staged in `iac/`, App: Ruff via pre-commit). To enable them:
+
+1. **From repo root:** run `bun install` (this runs `prepare` and configures git to use `.husky`).
+2. If hooks still don’t run, set the hooks path manually:
+   ```bash
+   git config core.hooksPath .husky
+   ```
+   Or run: `bun run prepare-hooks`.
+
+After that, `git commit` will run the root `.husky/pre-commit`, which runs IAC or App checks based on what’s staged.
+
 ## Commit format
 
 Commits must follow: **`[ORGINIT-XXX][type] subject`**
