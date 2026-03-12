@@ -1,4 +1,4 @@
-import { Duration } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Function as LambdaFunction, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { lambdaConstants } from '../../constants/lambda-constants';
@@ -19,7 +19,11 @@ export class Lambda extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    props: LambdaProps & { resolvedFunctionsPath: string; resolvedSharedPath: string }
+    props: LambdaProps & {
+      resolvedFunctionsPath: string;
+      resolvedSharedPath: string;
+      resolvedBuildDir: string;
+    }
   ) {
     super(scope, id);
     this.config = props.config;
@@ -28,10 +32,14 @@ export class Lambda extends Construct {
     const lambdaConfig = this.config.stack.lambda;
     LambdaBuilder.validatePaths(this.resolvedFunctionsPath, lambdaConfig.buildDirectory);
 
-    const layerResult = LambdaBuilder.createSharedLayerCode(props.resolvedSharedPath);
+    const layerResult = LambdaBuilder.createSharedLayerCode(
+      props.resolvedSharedPath,
+      props.resolvedBuildDir
+    );
     const sharedLayer = new LayerVersion(this, 'SharedLayer', {
       code: layerResult.code,
       description: 'Shared Python code for all Lambdas',
+      removalPolicy: RemovalPolicy.DESTROY, // Remove old layer version when a new one is deployed
     });
 
     const toCreate = lambdaConfig.functions.filter((f) => f.enabled !== false);

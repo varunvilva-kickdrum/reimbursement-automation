@@ -30,11 +30,13 @@ export class ReimbursementStack extends Stack {
     const repoRoot = path.resolve(baseConfigDir, '..', '..');
     const resolvedFunctionsPath = path.join(repoRoot, config.stack.lambda.functionsPath);
     const resolvedSharedPath = path.join(path.dirname(resolvedFunctionsPath), 'shared');
+    const resolvedBuildDir = path.join(repoRoot, config.stack.lambda.buildDirectory);
 
     this.lambda = new Lambda(this, 'Lambda', {
       config,
       resolvedFunctionsPath,
       resolvedSharedPath,
+      resolvedBuildDir,
     });
   }
 }

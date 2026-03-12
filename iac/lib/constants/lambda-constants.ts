@@ -9,6 +9,7 @@ export const DEFAULT_MEMORY = 128;
 
 export const LambdaBuildDir = {
   FUNCTION_BUILD: 'function-builds',
+  LAYER_BUILD: 'layer-builds',
 } as const;
 
 export const lambdaConstants = {

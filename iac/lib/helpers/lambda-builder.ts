@@ -1,6 +1,8 @@
-import * as fs from 'fs';
+import { createHash } from 'node:crypto';
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Code } from 'aws-cdk-lib/aws-lambda';
+import { lambdaConstants } from '../constants/lambda-constants';
 import type { FunctionBuildResult } from '../components/lambda/lambda-types';
 import { IacErrors } from '../errors';
 
@@ -9,9 +11,74 @@ const SHARED_PYTHON_DIR = 'python';
 
 /**
  * Lambda builder: path validation and function code asset creation.
- * Mirrors Ad-Results pattern (lib/helpers/lambda-builder.ts).
+ * Shared layer uses content hash so a new layer is only published when shared folder changes (Ad-Results pattern).
  */
 export class LambdaBuilder {
+  /**
+   * Calculate content hash for a directory (file paths + contents).
+   * Same content → same hash → same asset path → no new layer version.
+   */
+  static calculateDirectoryHash(dirPath: string): string {
+    if (!fs.existsSync(dirPath)) {
+      throw IacErrors.lambda(`Directory not found: ${dirPath}`, 'calculateDirectoryHash');
+    }
+    const hash = createHash('sha256');
+    const files = LambdaBuilder.getAllFiles(dirPath).sort((a, b) => a.localeCompare(b));
+    for (const file of files) {
+      const relativePath = path.relative(dirPath, file);
+      const content = fs.readFileSync(file);
+      hash.update(`${relativePath}:${content}`);
+    }
+    return hash.digest('hex').substring(0, 8);
+  }
+
+  private static getAllFiles(dirPath: string): string[] {
+    const files: string[] = [];
+    function traverse(currentPath: string) {
+      const items = fs.readdirSync(currentPath);
+      for (const item of items) {
+        const fullPath = path.join(currentPath, item);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory()) {
+          traverse(fullPath);
+        } else if (stat.isFile() && !item.startsWith('.')) {
+          files.push(fullPath);
+        }
+      }
+    }
+    traverse(dirPath);
+    return files;
+  }
+
+  private static copyDirectory(src: string, dest: string): void {
+    fs.mkdirSync(dest, { recursive: true });
+    const items = fs.readdirSync(src);
+    for (const item of items) {
+      const srcPath = path.join(src, item);
+      const destPath = path.join(dest, item);
+      const stat = fs.statSync(srcPath);
+      if (stat.isDirectory()) {
+        LambdaBuilder.copyDirectory(srcPath, destPath);
+      } else {
+        fs.copyFileSync(srcPath, destPath);
+      }
+    }
+  }
+
+  private static removeDirectory(dirPath: string): void {
+    if (!fs.existsSync(dirPath)) return;
+    const items = fs.readdirSync(dirPath);
+    for (const item of items) {
+      const fullPath = path.join(dirPath, item);
+      if (fs.statSync(fullPath).isDirectory()) {
+        LambdaBuilder.removeDirectory(fullPath);
+      } else {
+        fs.unlinkSync(fullPath);
+      }
+    }
+    fs.rmdirSync(dirPath);
+  }
+
   /**
    * Validate that functions path and build directory exist or can be created.
    */
@@ -84,10 +151,11 @@ export class LambdaBuilder {
 
   /**
    * Create Lambda layer code asset from the shared folder (lambda/shared).
-   * Expects shared/python/ so that in Lambda it extracts to /opt/python and
-   * imports like `from common import ...` work.
+   * Builds into a content-hash–named directory so a new layer version is only published
+   * when the shared folder contents change; otherwise the same asset path is reused.
+   * Expects shared/python/ so that in Lambda it extracts to /opt/python.
    */
-  static createSharedLayerCode(sharedPath: string): FunctionBuildResult {
+  static createSharedLayerCode(sharedPath: string, buildDirectory: string): FunctionBuildResult {
     const pythonDir = path.join(sharedPath, SHARED_PYTHON_DIR);
     if (!fs.existsSync(pythonDir) || !fs.statSync(pythonDir).isDirectory()) {
       throw IacErrors.lambda(
@@ -95,8 +163,25 @@ export class LambdaBuilder {
         'createSharedLayerCode'
       );
     }
+
+    const contentHash = LambdaBuilder.calculateDirectoryHash(sharedPath);
+    const layerBuildDir = path.join(buildDirectory, lambdaConstants.BUILD_DIRS.LAYER_BUILD);
+    const buildDir = path.join(layerBuildDir, `shared-layer-${contentHash}`);
+
+    fs.mkdirSync(buildDir, { recursive: true });
+    LambdaBuilder.copyDirectory(sharedPath, buildDir);
+
+    // Optional: clean build dir after CDK has read it (same pattern as Ad-Results)
+    setTimeout(() => {
+      try {
+        if (fs.existsSync(buildDir)) LambdaBuilder.removeDirectory(buildDir);
+      } catch {
+        // Ignore cleanup failures
+      }
+    }, 5000);
+
     return {
-      code: Code.fromAsset(sharedPath),
+      code: Code.fromAsset(buildDir),
       exists: true,
     };
   }
