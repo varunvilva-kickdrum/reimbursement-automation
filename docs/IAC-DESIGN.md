@@ -71,3 +71,16 @@ Example: **test_lambda** (Hello World, multi-file)
   - `greeting.py` – defines `get_greeting()` returning `"Hello World"`.
 
 Handler in CDK for this Lambda: `handler.lambda_handler` (module `handler`, function `lambda_handler`), because the asset root is `test_lambda/` and `handler.py` is at the root of that asset.
+
+---
+
+## 5. Tags (same set on all resources)
+
+All resources get the **same tags** so they can be identified and cost-allocated consistently.
+
+- **Where tags are defined**
+  - **Default tags (constants):** `iac/lib/constants/tag-constants.ts` – `DEFAULT_TAGS` (e.g. `Project`, `ManagedBy`). `tagList(config)` in `lib/helpers/tag.ts` adds `Environment` from config plus these defaults.
+  - **Config override/add:** `configs/default/reimbursementStackConfig.json` has a `tags` object (e.g. `"Project": "Reimbursements"`, `"ManagedBy": "CDK"`). Per-env configs (e.g. `configs/dev/reimbursementStackConfig.json`) can add or override keys.
+- **How they are applied**
+  - In `bin/app.ts`, `applyTags(app, config)` is called once after loading config. CDK propagates tags from the App down to every construct (stack, Lambda, layer, IAM role, etc.), so you do not tag resources individually.
+- **Result:** Every resource created by the stack (Lambda functions, layers, roles, etc.) receives the same tag set unless a resource explicitly opts out.

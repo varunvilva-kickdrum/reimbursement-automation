@@ -6,12 +6,16 @@
 import * as path from 'node:path';
 import * as cdk from 'aws-cdk-lib';
 import { getConfig } from '../lib/config/get-config';
+import { applyTags } from '../lib/helpers/tag';
 import { ReimbursementStack } from '../lib/stacks/reimbursement-stack';
 
 const app = new cdk.App();
 
 const configDir = path.join(__dirname, '../../configs');
 const config = getConfig(app, configDir);
+
+// Apply same tags to all resources (propagates to stack and every construct)
+applyTags(app, config);
 
 const env: cdk.Environment = {
   account: config.account,

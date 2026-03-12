@@ -14,5 +14,9 @@
   },
   "stepFunction": {
     "enabled": false
+  },
+  "tags": {
+    "Project": "Reimbursements",
+    "ManagedBy": "CDK"
   }
 }

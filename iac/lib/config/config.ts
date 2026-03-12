@@ -39,6 +39,8 @@ export interface StepFunctionConfig {
 export interface ReimbursementStackConfig {
   lambda: LambdaConfig;
   stepFunction?: StepFunctionConfig;
+  /** Optional tags applied to all resources. Merged with default tags (Environment, Project, etc.). */
+  tags?: Record<string, string>;
 }
 
 /** Common config from CDK context (environment, account, region). */
