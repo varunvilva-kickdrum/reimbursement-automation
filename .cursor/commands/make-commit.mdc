@@ -1,0 +1,44 @@
+---
+description: Stage changes and commit with commitlint-safe ORGINIT message format
+---
+
+# Make commit (commitlint / husky)
+
+Create a **short, descriptive** commit that passes **root** `.husky/commit-msg` → **commitlint** (`commitlint.config.js`).
+
+## Required message format
+
+```
+[ORGINIT-<number>][<type>] <subject>
+```
+
+- **Ticket:** `[ORGINIT-123]` — digits only after `ORGINIT-`. Use the ticket from the branch name, Linear, or ask the user if unclear (e.g. `ORGINIT-1946`).
+- **Type:** **one** of: `chore` | `fix` | `feat` | `docs` | `style` | `refactor` | `test` | `ci` | `build` | `perf`  
+  - **Not** combined (e.g. ~~`feat/chore`~~); pick the **primary** type.
+- **Subject:** imperative, concise, **no period at end**; **space** after the second `]` (commitlint requires it).
+- **Length:** whole header **≤ 100 characters** (commitlint rule).
+
+### Valid examples
+
+- `[ORGINIT-1946][feat] Add reimbursement stack tags`
+- `[ORGINIT-1946][chore] Format IAC with Prettier`
+- `[ORGINIT-42][fix] Resolve CDK synth account error`
+
+### Invalid examples
+
+- `[ORGINIT-1946][feat/chore] ...` — slash types not allowed  
+- Missing space: `[ORGINIT-1][feat]Add x`  
+- Wrong ticket prefix: `[JIRA-1][feat] ...`
+
+## Steps
+
+1. Run **`git status`** and **`git diff`** (and **`git diff --staged`** if anything staged). Understand what changed.
+2. Choose **type** and **ticket**; draft a **one-line subject** (roughly **50–72 chars** for the subject part is ideal; stay under 100 for the full header).
+3. Stage only what belongs in this commit: **`git add <paths>`** (avoid `git add -A` unless the user wants everything).
+4. Commit:  
+   `git commit -m "[ORGINIT-XXX][type] Subject here"`
+5. If **commitlint** fails, read the error, adjust the message (format, length, or type), and **retry** the same commit (amend if already committed: `git commit --amend -m "..."`).
+
+## Output
+
+Reply with: the **exact final message** used, **files staged**, and **commit hash** (or note if amend).

@@ -5,6 +5,8 @@ AWS CDK (TypeScript) for the reimbursement pipeline. Deploys the Hello World Lam
 ## Structure
 
 - **`bin/app.ts`** — CDK app entry; reads `environment` from context (dev | staging | prod).
+- **`constants/`** — Centralized strings, numbers, and CDK-related defaults (no inline magic values in `lib/`).
+- **`enums/`** — Shared enums (environment, config file names).
 - **`lib/stacks/`** — Stacks (e.g. `ReimbursementStack`).
 - **`lib/components/`** — Components (e.g. Lambda); **`lib/helpers/`** — Helpers (e.g. lambda-builder).
 - **`cdk.json`** — CDK CLI config; app runs compiled `dist/bin/app.js`. Context includes `environments.dev|staging|prod` with `account`, `region`, and `profile` (like Ad-Results Media).

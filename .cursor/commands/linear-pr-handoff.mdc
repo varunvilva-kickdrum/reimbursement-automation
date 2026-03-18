@@ -1,0 +1,112 @@
+---
+description: After work is done — PM comment on Linear, open PR, link + reviewers, move to In Review
+---
+
+# Linear + GitHub handoff (ticket ready for review)
+
+Run when the **ticket is satisfied**, code is **committed**, and you are ready to **push** and hand off to PM/reviewers.
+
+## What to use: **Command** (this file)
+
+| Approach | Why |
+|----------|-----|
+| **Command** | You invoke it when ready; steps use **Linear MCP** + **terminal (`gh`)**. Fits “when I’m done” workflows. |
+| **Agent** | Same steps; no extra benefit unless you want a background run. |
+| **Skill** | Better for portable playbooks across repos; this flow is **repo- and team-specific**—keep it here. |
+| **GitHub Action** | Only if you want **fully automatic** updates on every push (separate from Cursor). |
+
+---
+
+## Prerequisites
+
+1. **Linear in Cursor** — Linear MCP enabled; you can call tools like `get_issue`, `save_comment`, `save_issue`, `list_issue_statuses`.
+2. **GitHub CLI `gh`** — Installed and authenticated (`gh auth login`). Used to create PRs, list collaborators, add reviewers.
+3. **Remote & branch** — Current branch pushed (or push as step 1). Branch name should match ticket (e.g. `ORGINIT-1946`) so context is clear.
+4. **Base branch** — Know default target (e.g. `main` or `develop`).
+5. **Linear “In Review” state** — Exact status name in your team (e.g. `In Review`, `In Progress` → review). If unsure, run `list_issue_statuses` for the team first.
+6. **Reviewers policy** — “All collaborators” can include many people; confirm org policy (exclude author, only direct collaborators, etc.).
+
+---
+
+## Execution order (do in this sequence)
+
+### 1. Confirm scope
+
+- Issue id (e.g. `ORGINIT-1946`).
+- Summarize **what shipped** in **plain language** for PMs (outcomes, user-visible behavior, no file names, no stack traces, minimal jargon).
+
+### 2. Push branch
+
+```bash
+git push -u origin HEAD
+```
+
+### 3. Open the PR (`gh`)
+
+```bash
+gh pr create --base <main-or-develop> --title "[ORGINIT-XXXX] <short title>" --body "<summary + testing notes>"
+```
+
+Capture the **PR URL** from output.
+
+### 4. Add reviewers (all collaborators example)
+
+List collaborators (adjust if you must exclude bots or the PR author):
+
+```bash
+gh api repos/:owner/:repo/collaborators --paginate -q '.[].login' | tr '\n' ' '
+```
+
+Then:
+
+```bash
+gh pr edit <number-or-url> --add-reviewer user1,user2,...
+```
+
+If the list is large, add a **team** instead (if your org uses teams):
+
+```bash
+gh pr edit <number> --add-reviewer myorg/engineering
+```
+
+### 5. Linear — PM-facing comment (Linear MCP)
+
+Use **`save_comment`**:
+
+- `issueId`: e.g. `ORGINIT-1946`
+- `body`: Short markdown for PMs, e.g.  
+  - What was delivered  
+  - How to validate (high level)  
+  - **Link:** `[Pull request](<PR_URL>)`  
+  No code dumps, no internal refactors unless they affect product behavior.
+
+### 6. Linear — attach PR link + move to review (Linear MCP)
+
+Use **`save_issue`** on the same issue:
+
+- `id`: `ORGINIT-1946`
+- `state`: your team’s review state name (e.g. `In Review`) — use **`list_issue_statuses`** with `team` if needed to match exactly.
+- `links`: append `[{ "url": "<PR_URL>", "title": "Pull request" }]` (append-only per API).
+
+Optional: if your team uses a different field for “PR link,” prefer **`links`** on the issue so it shows in Linear.
+
+### 7. Report back
+
+Reply in chat with: PR URL, reviewers added, Linear comment posted, new status.
+
+---
+
+## If something fails
+
+| Failure | Mitigation |
+|---------|------------|
+| `gh` not logged in | `gh auth login` |
+| Linear state name wrong | `list_issue_statuses` → use exact name |
+| Reviewers rejected | Some users must accept org invite; use smaller set or team slug |
+| MCP unavailable | Do steps 5–6 manually in Linear UI |
+
+---
+
+## Optional later: automation without Cursor
+
+To run **on every push** without opening Cursor, use a **GitHub Action** that calls Linear’s GraphQL API (issue from branch name `ORGINIT-123`, post comment, set state). That is separate from this command.
