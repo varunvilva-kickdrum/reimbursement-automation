@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'node:path';
 import { ConfigDirectory, ConfigFileName, ConfigType } from '../../enums';
-import { IacErrors } from '../errors';
+import { IacErrors, IacValidationError } from '../errors';
 import type { Config } from './config';
 
 export interface SecretConfigItem {
@@ -45,6 +45,9 @@ function loadSecretsFromFile(filePath: string, configType: ConfigType): SecretCo
     validateSecretsConfig(secretsConfig, configType);
     return secretsConfig.secrets;
   } catch (error) {
+    if (error instanceof IacValidationError) {
+      throw error;
+    }
     throw IacErrors.config(`Failed to load ${configType} secrets configuration`, filePath, error);
   }
 }
@@ -77,6 +80,12 @@ function validateSecretsConfig(config: SecretsConfigFile, configType: ConfigType
       throw IacErrors.validation(
         `Invalid ${configType} secret at index ${index}: missing envVar`,
         `secrets[${index}].envVar`
+      );
+    }
+    if (!secret.description || typeof secret.description !== 'string') {
+      throw IacErrors.validation(
+        `Invalid ${configType} secret at index ${index}: description must be a non-empty string`,
+        `secrets[${index}].description`
       );
     }
     if (typeof secret.required !== 'boolean') {

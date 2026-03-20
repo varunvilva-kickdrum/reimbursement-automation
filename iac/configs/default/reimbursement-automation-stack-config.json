@@ -9,7 +9,10 @@
       {
         "name": "test_lambda",
         "timeout": 30,
-        "memorySize": 128
+        "memorySize": 128,
+        "s3Buckets": [],
+        "lockTableAccess": false,
+        "secretsAccess": false
       }
     ]
   },
@@ -35,6 +38,7 @@
     "enabled": true,
     "templatePath": "templates/step-functions",
     "tracingEnabled": false,
+    "invokeLambdaFunctionNames": ["test_lambda"],
     "stateMachines": [
       {
         "name": "pipeline",

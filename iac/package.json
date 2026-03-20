@@ -24,14 +24,14 @@
     "diff": "cdk diff"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.170.0",
+    "aws-cdk-lib": "2.242.0",
     "cdk-nag": "^2.37.55",
     "constructs": "^10.4.2",
     "mustache": "^4.2.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "aws-cdk": "^2.170.0",
+    "aws-cdk": "2.1112.0",
     "typescript": "^5.4.0",
     "@types/mustache": "^4.2.5",
     "@types/node": "^20.12.7",

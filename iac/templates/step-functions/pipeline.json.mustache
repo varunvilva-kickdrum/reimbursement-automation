@@ -29,7 +29,19 @@
           "BackoffRate": 2
         }
       ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleApplicationError"
+        }
+      ],
       "End": true
+    },
+    "HandleApplicationError": {
+      "Type": "Fail",
+      "Error": "PipelineTaskFailed",
+      "Cause": "RunTestLambda failed or returned an error after retries; see execution history and $.error for details."
     }
   }
 }

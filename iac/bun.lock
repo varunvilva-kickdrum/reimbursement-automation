@@ -3,9 +3,9 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "reimbursements-iac",
+      "name": "reimbursement-automation-iac",
       "dependencies": {
-        "aws-cdk-lib": "^2.170.0",
+        "aws-cdk-lib": "2.242.0",
         "cdk-nag": "^2.37.55",
         "constructs": "^10.4.2",
         "mustache": "^4.2.0",
@@ -16,7 +16,7 @@
         "@types/node": "^20.12.7",
         "@typescript-eslint/eslint-plugin": "^7.0.0",
         "@typescript-eslint/parser": "^7.0.0",
-        "aws-cdk": "^2.170.0",
+        "aws-cdk": "2.1112.0",
         "eslint": "^9.0.0",
         "husky": "^9.0.0",
         "lint-staged": "^15.2.0",
@@ -110,7 +110,7 @@
 
     "astral-regex": ["astral-regex@2.0.0", "", {}, "sha512-Z7tMw1ytTXt5jqMcOP+OQteU1VuNK9Y02uuJtKQ1Sv69jXQKKg5cibLwGJow8yzZP+eAc18EmLGPal0bp36rvQ=="],
 
-    "aws-cdk": ["aws-cdk@2.1110.0", "", { "bin": { "cdk": "bin/cdk" } }, "sha512-t881rXhuHWbiCXf8nuzf81jyOzHCgX1DNiCD3COwVGpT6DYna2SjsrDbraenJM722Oc+2OOAAMpKNEtVNj7mEg=="],
+    "aws-cdk": ["aws-cdk@2.1112.0", "", { "bin": { "cdk": "bin/cdk" } }, "sha512-IYUbsd9tpBQRqEO2evWsG+p2ZNa6wG5/sJvmWaqo45V1ep8BW+mrf+jEpFLD9uDPXqRA57EZGVGils7QLbOhNA=="],
 
     "aws-cdk-lib": ["aws-cdk-lib@2.242.0", "", { "dependencies": { "@aws-cdk/asset-awscli-v1": "2.2.263", "@aws-cdk/asset-node-proxy-agent-v6": "^2.1.1", "@aws-cdk/cloud-assembly-api": "^2.1.1", "@aws-cdk/cloud-assembly-schema": "^52.1.0", "@balena/dockerignore": "^1.0.2", "case": "1.6.3", "fs-extra": "^11.3.3", "ignore": "^5.3.2", "jsonschema": "^1.5.0", "mime-types": "^2.1.35", "minimatch": "^10.2.3", "punycode": "^2.3.1", "semver": "^7.7.4", "table": "^6.9.0", "yaml": "1.10.2" }, "peerDependencies": { "constructs": "^10.5.0" } }, "sha512-AmZl4Ep9gWX7wGxmIaLGNqE7DSQFrIg1tpiCQE/INf4vc9MbLvUVYE2qikzk8LUnwe0qF1bG2SaaZZ0u9UMs3w=="],
 

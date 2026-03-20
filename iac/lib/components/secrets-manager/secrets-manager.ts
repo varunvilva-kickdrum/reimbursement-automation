@@ -1,4 +1,4 @@
-import { Annotations } from 'aws-cdk-lib';
+import { Annotations, SecretValue } from 'aws-cdk-lib';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { ResourceName } from '../../../constants/resource-names';
@@ -66,10 +66,7 @@ export class ReimbursementSecretsManager extends Construct {
     return new Secret(this, ResourceName.Secrets, {
       secretName: getResourceName(ResourceName.Secrets, config),
       description: `reimbursement-automation app secrets (${config.environment}) — values set in CI`,
-      generateSecretString: {
-        secretStringTemplate,
-        generateStringKey: 'GENERATED_KEY',
-      },
+      secretStringValue: SecretValue.unsafePlainText(secretStringTemplate),
     });
   }
 }

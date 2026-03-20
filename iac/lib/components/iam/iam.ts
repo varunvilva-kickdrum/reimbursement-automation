@@ -18,7 +18,6 @@ export class Iam extends Construct {
     super(scope, id);
 
     const { config } = props;
-    const prefix = getResourceName('', config);
 
     this.stepFunctionExecutionRole = new Role(this, 'StepFunctionExecutionRole', {
       assumedBy: new ServicePrincipal('states.amazonaws.com'),
@@ -26,17 +25,22 @@ export class Iam extends Construct {
       description: `reimbursement-automation Step Functions execution role (${config.environment})`,
     });
 
-    this.stepFunctionExecutionRole.addToPrincipalPolicy(
-      new PolicyStatement({
-        sid: StepFunctionsExecutionPolicySid.InvokeLambdas,
-        effect: Effect.ALLOW,
-        actions: ['lambda:InvokeFunction'],
-        resources: [
-          `arn:aws:lambda:${config.region}:${config.account}:function:${prefix}*`,
-          `arn:aws:lambda:${config.region}:${config.account}:function:${prefix}*:*`,
-        ],
-      })
-    );
+    const invokeNames = config.stack.stepFunction.invokeLambdaFunctionNames;
+    if (invokeNames.length > 0) {
+      const resources = invokeNames.flatMap((functionName) => {
+        const fullName = getResourceName(functionName, config);
+        const arn = `arn:aws:lambda:${config.region}:${config.account}:function:${fullName}`;
+        return [arn, `${arn}:*`];
+      });
+      this.stepFunctionExecutionRole.addToPrincipalPolicy(
+        new PolicyStatement({
+          sid: StepFunctionsExecutionPolicySid.InvokeLambdas,
+          effect: Effect.ALLOW,
+          actions: ['lambda:InvokeFunction'],
+          resources,
+        })
+      );
+    }
 
     this.stepFunctionExecutionRole.addToPrincipalPolicy(
       new PolicyStatement({

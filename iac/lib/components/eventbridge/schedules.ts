@@ -35,34 +35,22 @@ export class Schedules extends Construct {
         continue;
       }
 
-      const rule = new Rule(this, `Schedule-${schedule.id}`, {
-        ruleName: getResourceName(`schedule-${schedule.id}`, config),
-        description: reimbursementAutomationScheduleRuleDescription(schedule.id),
+      const scheduleId = schedule.id;
+      const rule = new Rule(this, `Schedule-${scheduleId}`, {
+        ruleName: getResourceName(`schedule-${scheduleId}`, config),
+        description: reimbursementAutomationScheduleRuleDescription(scheduleId),
         schedule: Schedule.expression(schedule.scheduleExpression),
       });
 
-      if (schedule.targetType === 'LAMBDA') {
-        const fnName = schedule.lambdaFunctionName;
-        if (!fnName) {
-          throw IacErrors.validation(
-            `Schedule ${schedule.id}: lambdaFunctionName required for LAMBDA target`,
-            'lambdaFunctionName'
-          );
-        }
-        const fn = lambda.getLambdaFunction(fnName);
+      const targetType = schedule.targetType;
+      if (targetType === 'LAMBDA') {
+        const fn = lambda.getLambdaFunction(schedule.lambdaFunctionName);
         rule.addTarget(new LambdaFunction(fn, { retryAttempts: 2 }));
-      } else {
-        const smName = schedule.stateMachineName;
-        if (!smName) {
-          throw IacErrors.validation(
-            `Schedule ${schedule.id}: stateMachineName required for STEP_FUNCTION target`,
-            'stateMachineName'
-          );
-        }
-        const info = stepFunctions.getStateMachine(smName);
+      } else if (targetType === 'STEP_FUNCTION') {
+        const info = stepFunctions.getStateMachine(schedule.stateMachineName);
         if (!info) {
           throw IacErrors.validation(
-            `Schedule ${schedule.id}: state machine "${smName}" not found`,
+            `Schedule ${scheduleId}: state machine "${schedule.stateMachineName}" not found`,
             'stateMachineName'
           );
         }
@@ -74,6 +62,11 @@ export class Schedules extends Construct {
             }),
             retryAttempts: 2,
           })
+        );
+      } else {
+        throw IacErrors.validation(
+          `Schedule ${scheduleId}: unsupported targetType "${String(targetType)}"`,
+          'targetType'
         );
       }
     }

@@ -1,19 +1,9 @@
 import type { EnvironmentType } from '../../enums';
+import type { ReimbursementStackConfig } from './reimbursement-automation-stack-schema';
 
-export interface LambdaFunctionConfig {
-  readonly name: string;
-  readonly timeout?: number;
-  readonly memorySize?: number;
-  readonly enabled?: boolean;
-}
+export type LambdaFunctionConfig = ReimbursementStackConfig['lambda']['functions'][number];
 
-export interface LambdaConfig {
-  readonly functionsPath: string;
-  readonly buildDirectory: string;
-  readonly defaultTimeout: number;
-  readonly defaultMemorySize: number;
-  readonly functions: readonly LambdaFunctionConfig[];
-}
+export type LambdaConfig = ReimbursementStackConfig['lambda'];
 
 export enum RemovalPolicyType {
   Destroy = 'destroy',
@@ -25,64 +15,44 @@ export interface S3BucketStackConfig {
   readonly versioned?: boolean;
 }
 
-export interface S3StackConfig {
-  readonly buckets: readonly S3BucketStackConfig[];
-}
+export type S3StackConfig = ReimbursementStackConfig['s3'];
 
-export interface DynamoDbLockTableConfig {
-  readonly name: string;
-  readonly partitionKeyName?: string;
-  readonly ttlAttributeName?: string;
-}
+export type DynamoDbLockTableConfig = ReimbursementStackConfig['dynamodb']['lockTable'];
 
-export interface DynamoDbStackConfig {
-  readonly lockTable: DynamoDbLockTableConfig;
-}
+export type DynamoDbStackConfig = ReimbursementStackConfig['dynamodb'];
 
-export interface SecretsStackConfig {
-  readonly enabled?: boolean;
-}
+export type SecretsStackConfig = NonNullable<ReimbursementStackConfig['secrets']>;
 
-export interface StateMachineStackConfig {
-  readonly name: string;
-  readonly enabled?: boolean;
-  readonly description?: string;
-}
+export type StateMachineStackConfig =
+  ReimbursementStackConfig['stepFunction']['stateMachines'][number];
 
-export interface StepFunctionStackConfig {
-  readonly enabled: boolean;
-  /** Path segment relative to the iac/ root (e.g. templates/step-functions). */
-  readonly templatePath: string;
-  readonly tracingEnabled?: boolean;
-  readonly stateMachines: readonly StateMachineStackConfig[];
-}
+export type StepFunctionStackConfig = ReimbursementStackConfig['stepFunction'];
 
 export type EventBridgeScheduleTargetType = 'LAMBDA' | 'STEP_FUNCTION';
 
-export interface EventBridgeScheduleStackConfig {
+export interface EventBridgeScheduleBaseConfig {
   readonly id: string;
   readonly enabled: boolean;
   readonly scheduleExpression: string;
-  readonly targetType: EventBridgeScheduleTargetType;
-  readonly lambdaFunctionName?: string;
-  readonly stateMachineName?: string;
 }
 
-export interface EventBridgeStackConfig {
-  readonly enabled: boolean;
-  readonly schedules: readonly EventBridgeScheduleStackConfig[];
+export interface EventBridgeLambdaScheduleConfig extends EventBridgeScheduleBaseConfig {
+  readonly targetType: 'LAMBDA';
+  readonly lambdaFunctionName: string;
 }
 
-export interface ReimbursementStackConfig {
-  readonly removalPolicy?: RemovalPolicyType;
-  readonly lambda: LambdaConfig;
-  readonly s3: S3StackConfig;
-  readonly dynamodb: DynamoDbStackConfig;
-  readonly secrets?: SecretsStackConfig;
-  readonly stepFunction: StepFunctionStackConfig;
-  readonly eventBridge?: EventBridgeStackConfig;
-  readonly tags?: Readonly<Record<string, string>>;
+export interface EventBridgeStepFunctionScheduleConfig extends EventBridgeScheduleBaseConfig {
+  readonly targetType: 'STEP_FUNCTION';
+  readonly stateMachineName: string;
 }
+
+export type EventBridgeScheduleStackConfig =
+  | EventBridgeLambdaScheduleConfig
+  | EventBridgeStepFunctionScheduleConfig;
+
+export type EventBridgeStackConfig = NonNullable<ReimbursementStackConfig['eventBridge']>;
+
+export type { ReimbursementStackConfig };
 
 export interface CommonConfig {
   readonly region: string;

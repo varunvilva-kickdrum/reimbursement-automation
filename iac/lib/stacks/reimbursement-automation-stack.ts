@@ -11,6 +11,7 @@ import { ReimbursementSecretsManager } from '../components/secrets-manager/secre
 import { StepFunctions } from '../components/stepfunctions/stepfunctions';
 import type { Config } from '../config/config';
 import { getResourceName } from '../config/global-config';
+import { IacErrors } from '../errors';
 
 export interface ReimbursementStackProps extends StackProps {
   readonly config: Config;
@@ -78,20 +79,29 @@ export class ReimbursementStack extends Stack {
     const fns = config.stack.lambda.functions.filter((f) => f.enabled !== false);
     for (const fnConfig of fns) {
       const fn = this.lambda.getLambdaFunction(fnConfig.name);
-      for (const bucket of this.s3.buckets.values()) {
-        bucket.grantReadWrite(fn);
-      }
-      this.dynamodb.lockTable.table.grantReadWriteData(fn);
-      fn.addEnvironment('LOCK_TABLE_NAME', this.dynamodb.lockTable.tableName);
-      const primary = config.stack.s3.buckets[0];
-      if (primary) {
-        const b = this.s3.getBucket(primary.name);
-        if (b) {
-          fn.addEnvironment('DATA_BUCKET_NAME', b.bucketName);
+      const bucketNames = fnConfig.s3Buckets;
+      if (bucketNames && bucketNames.length > 0) {
+        for (const bucketName of bucketNames) {
+          const bucket = this.s3.getBucket(bucketName);
+          if (!bucket) {
+            throw IacErrors.validation(
+              `Lambda "${fnConfig.name}" references unknown S3 bucket "${bucketName}"`,
+              's3Buckets'
+            );
+          }
+          bucket.grantReadWrite(fn);
+        }
+        const primaryBucket = this.s3.getBucket(bucketNames[0]);
+        if (primaryBucket) {
+          fn.addEnvironment('DATA_BUCKET_NAME', primaryBucket.bucketName);
         }
       }
+      if (fnConfig.lockTableAccess === true) {
+        this.dynamodb.lockTable.table.grantReadWriteData(fn);
+        fn.addEnvironment('LOCK_TABLE_NAME', this.dynamodb.lockTable.tableName);
+      }
       const sec = this.secretsManager.secret;
-      if (sec) {
+      if (fnConfig.secretsAccess === true && sec) {
         sec.grantRead(fn);
         fn.addEnvironment('SECRETS_ARN', sec.secretArn);
       }

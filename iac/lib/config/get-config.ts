@@ -11,8 +11,11 @@ import {
 } from '../../constants';
 import { ConfigDirectory, ConfigFileName, EnvironmentType } from '../../enums';
 import { IacErrors } from '../errors';
-import type { CommonConfig, Config, ReimbursementStackConfig } from './config';
-import { reimbursementStackSchema } from './reimbursement-stack-schema';
+import type { CommonConfig, Config } from './config';
+import {
+  reimbursementStackSchema,
+  type ReimbursementStackConfig,
+} from './reimbursement-automation-stack-schema';
 
 function loadJsonConfig(filePath: string): Record<string, unknown> {
   if (!fs.existsSync(filePath)) {
@@ -139,7 +142,7 @@ function loadStackConfig(configDir: string, environment: string): ReimbursementS
       parsed.error
     );
   }
-  return parsed.data as unknown as ReimbursementStackConfig;
+  return parsed.data;
 }
 
 export function getConfig(app: App, configDir: string): Config {

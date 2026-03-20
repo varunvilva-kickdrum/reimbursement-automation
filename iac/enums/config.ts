@@ -1,5 +1,5 @@
 export enum ConfigFileName {
-  ReimbursementStack = 'reimbursementStackConfig.json',
+  ReimbursementStack = 'reimbursement-automation-stack-config.json',
   Secrets = 'secrets-config.json',
 }
 

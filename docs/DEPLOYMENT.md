@@ -13,14 +13,14 @@ The CD pipeline (`.github/workflows/deploy.yml`) deploys the **reimbursement-aut
 
 ### Secrets required (repository secrets)
 
-For **dev** (push to `dev`), the workflow uses these **repository** secrets (no environment needed):
+For **dev** (push to `dev`), the workflow’s **Configure AWS credentials** step uses the GitHub **environment** `dev` and expects:
 
-| Secret name             | Description                 |
-| ----------------------- | --------------------------- |
-| `AWS_ACCESS_KEY_ID`     | IAM user access key ID.     |
-| `AWS_SECRET_ACCESS_KEY` | IAM user secret access key. |
+| Secret name                  | Description                    |
+| ---------------------------- | ------------------------------ |
+| `AWS_ACCESS_KEY_ID_DEV`      | IAM user access key ID.        |
+| `AWS_SECRET_ACCESS_KEY_DEV`  | IAM user secret access key.    |
 
-Add them under **Settings → Secrets and variables → Actions → Repository secrets**. Staging/prod can use `AWS_ACCESS_KEY_ID_STAGING` / `AWS_SECRET_ACCESS_KEY_STAGING` etc. when you add those jobs.
+Configure these under **Settings → Environments → dev → Environment secrets** (or equivalent for your org). Staging and production use `AWS_ACCESS_KEY_ID_STAGING` / `AWS_SECRET_ACCESS_KEY_STAGING` and `AWS_ACCESS_KEY_ID_PROD` / `AWS_SECRET_ACCESS_KEY_PROD` respectively.
 
 ### Application secrets (AWS Secrets Manager)
 
@@ -34,14 +34,14 @@ CDK creates a secret named `{environment}-reimbursement-automation-secrets` with
 
 Extend `iac/configs/secrets/secrets-config.json` and mirror new keys in `iac/enums/environment-vars.ts` so CDK validation stays in sync. For **local synth/deploy without real secrets**, placeholders from CDK are enough; real values are only pushed from CI.
 
-**Disable** the managed secret for sandbox stacks via `"secrets": { "enabled": false }` in `reimbursementStackConfig.json` (skips reading secrets JSON and creating the secret).
+**Disable** the managed secret for sandbox stacks via `"secrets": { "enabled": false }` in `reimbursement-automation-stack-config.json` (skips reading secrets JSON and creating the secret).
 
 ### One-time: CDK bootstrap
 
 In each AWS account/region you deploy to, run once (with credentials that can create the bootstrap stack). Get your account ID from the AWS console or run `aws sts get-caller-identity`:
 
 ```bash
-cd iac && bun run build && bunx cdk bootstrap aws://YOUR_ACCOUNT_ID/us-west-2
+cd iac && bun install && bun run build && bun run cdk bootstrap aws://YOUR_ACCOUNT_ID/us-west-2
 ```
 
 ---
@@ -98,7 +98,7 @@ In the repo: **Settings → Secrets and variables → Actions**.
 
 The workflow uses these in “Configure AWS credentials” and sets `CDK_DEFAULT_ACCOUNT` / `CDK_DEFAULT_REGION` for CDK.
 
-**IAC CI** (`.github/workflows/ci.yml`) runs `lint`, `format:check`, `build`, and `cdk synth` with a placeholder account so [cdk-nag](https://github.com/cdklabs/cdk-nag) **AwsSolutions** checks run on every change under `iac/`. **Deploy** jobs run `lint` and `format:check` before `build`.
+**IAC CI** (`.github/workflows/ci.yml`) runs `lint`, `format:check`, `build`, and a pinned **`bunx aws-cdk@… synth`** (see `iac/package.json` → `aws-cdk`) so the CLI understands the **cloud assembly** format produced by the repo’s `aws-cdk-lib`. **Deploy** jobs use the same pinned CLI for `deploy`.
 
 ### 3. Bootstrap CDK (one-time per account/region)
 
@@ -106,8 +106,9 @@ From your machine (or a one-off job) with AWS credentials configured:
 
 ```bash
 cd iac
+bun install
 bun run build
-bunx cdk bootstrap aws://ACCOUNT_ID/us-west-2
+bun run cdk bootstrap aws://ACCOUNT_ID/us-west-2
 ```
 
 Replace `ACCOUNT_ID` with the same value as `AWS_ACCOUNT_ID_*`. After that, the GitHub Actions deploy step can run `cdk deploy` successfully.

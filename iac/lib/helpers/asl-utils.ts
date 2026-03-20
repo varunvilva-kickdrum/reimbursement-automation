@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import Mustache from 'mustache';
 import type { Config } from '../config/config';
 import { getResourceName } from '../config/global-config';
-import { IacErrors } from '../errors';
+import { IacConfigError, IacErrors } from '../errors';
 
 export function getDefinitionBodyFromASL(
   stateMachineName: string,
@@ -31,8 +31,22 @@ export function getDefinitionBodyFromASL(
   const templatePath = path.join(resolvedTemplateDir, `${stateMachineName}.json.mustache`);
   try {
     const template = readFileSync(templatePath, 'utf-8');
-    return Mustache.render(template, view);
+    const rendered = Mustache.render(template, view);
+    try {
+      JSON.parse(rendered);
+    } catch (parseError) {
+      const detail = parseError instanceof Error ? parseError.message : String(parseError);
+      throw IacErrors.config(
+        `Rendered Step Function ASL is not valid JSON for ${stateMachineName}: ${detail}`,
+        templatePath,
+        parseError
+      );
+    }
+    return rendered;
   } catch (error) {
+    if (error instanceof IacConfigError) {
+      throw error;
+    }
     throw IacErrors.config(
       `Failed to render Step Function template for ${stateMachineName}`,
       templatePath,

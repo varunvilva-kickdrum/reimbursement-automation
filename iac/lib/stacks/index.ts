@@ -1,2 +1,2 @@
-export { ReimbursementStack } from './reimbursement-stack';
-export type { ReimbursementStackProps } from './reimbursement-stack';
+export { ReimbursementStack } from './reimbursement-automation-stack';
+export type { ReimbursementStackProps } from './reimbursement-automation-stack';

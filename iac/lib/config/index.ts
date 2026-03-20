@@ -7,7 +7,6 @@ export type {
   EventBridgeStackConfig,
   LambdaConfig,
   LambdaFunctionConfig,
-  ReimbursementStackConfig,
   S3BucketStackConfig,
   S3StackConfig,
   SecretsStackConfig,
@@ -21,5 +20,5 @@ export { getCommonConfig, getConfig, getProfileForEnvironment } from './get-conf
 export { getResourceName } from './global-config';
 export {
   reimbursementStackSchema,
-  type ReimbursementStackConfigValidated,
-} from './reimbursement-stack-schema';
+  type ReimbursementStackConfig,
+} from './reimbursement-automation-stack-schema';

@@ -8,11 +8,31 @@
 const fs = require('fs');
 const path = require('path');
 
+/** Must match environments used under iac/configs/secrets/ and deploy workflows (no path segments). */
+const SUPPORTED_ENVS = new Set(['dev', 'staging', 'prod']);
+
+function assertAllowedEnvironment(environment) {
+  if (typeof environment !== 'string' || !environment.trim()) {
+    throw new Error('Environment must be a non-empty string');
+  }
+  const trimmed = environment.trim();
+  if (!/^[a-z0-9_-]+$/i.test(trimmed)) {
+    throw new Error(`Invalid environment "${environment}": only letters, digits, hyphen, and underscore are allowed`);
+  }
+  if (!SUPPORTED_ENVS.has(trimmed)) {
+    throw new Error(
+      `Unsupported environment "${trimmed}". Expected one of: ${[...SUPPORTED_ENVS].sort().join(', ')}`
+    );
+  }
+  return trimmed;
+}
+
 function loadSecretsConfig(environment) {
+  const normalizedEnv = assertAllowedEnvironment(environment);
   const configDir = path.join(__dirname, '../../iac/configs/secrets');
   const defaultConfigPath = path.join(configDir, 'secrets-config.json');
   const defaultSecrets = JSON.parse(fs.readFileSync(defaultConfigPath, 'utf8')).secrets;
-  const envConfigPath = path.join(configDir, `${environment}-secrets-config.json`);
+  const envConfigPath = path.join(configDir, `${normalizedEnv}-secrets-config.json`);
   let envSecrets = [];
   if (fs.existsSync(envConfigPath)) {
     envSecrets = JSON.parse(fs.readFileSync(envConfigPath, 'utf8')).secrets;
@@ -37,14 +57,14 @@ function buildSecretJson(secretsConfig) {
 }
 
 function main() {
-  const environment = process.argv[2];
-  if (!environment) {
+  const rawEnv = process.argv[2];
+  if (!rawEnv) {
     console.error('Usage: node populate-secrets.js <environment>');
     console.error('Example: node populate-secrets.js dev');
     process.exit(1);
   }
   try {
-    const secretsConfig = loadSecretsConfig(environment);
+    const secretsConfig = loadSecretsConfig(rawEnv);
     if (secretsConfig.length === 0) {
       console.error('No secrets in merged config — skipping output');
       console.log('{}');

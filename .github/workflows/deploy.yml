@@ -51,13 +51,25 @@ jobs:
       - name: CDK Deploy to Dev
         run: |
           cd iac
-          bunx cdk deploy --all --context environment=dev --require-approval never
+          bunx aws-cdk@2.1112.0 deploy --all --context environment=dev --require-approval never
         env:
           CDK_DEFAULT_REGION: us-west-2
 
       - name: Populate secrets in AWS Secrets Manager
         run: |
-          SECRET_JSON=$(node .github/scripts/populate-secrets.js dev)
+          set -euo pipefail
+          SECRET_JSON="$(node .github/scripts/populate-secrets.js dev)"
+          export SECRET_JSON
+          node -e "\
+            const s = process.env.SECRET_JSON;\
+            if (s == null || !String(s).trim()) {\
+              console.error('Populate secrets produced empty SECRET_JSON');\
+              process.exit(1);\
+            }\
+            try { JSON.parse(s); } catch (e) {\
+              console.error('SECRET_JSON is not valid JSON:', e instanceof Error ? e.message : e);\
+              process.exit(1);\
+            }"
           aws secretsmanager put-secret-value \
             --secret-id dev-reimbursement-automation-secrets \
             --secret-string "$SECRET_JSON"
@@ -101,13 +113,25 @@ jobs:
       - name: CDK Deploy to Staging
         run: |
           cd iac
-          bunx cdk deploy --all --context environment=staging --require-approval never
+          bunx aws-cdk@2.1112.0 deploy --all --context environment=staging --require-approval never
         env:
           CDK_DEFAULT_REGION: us-west-2
 
       - name: Populate secrets in AWS Secrets Manager
         run: |
-          SECRET_JSON=$(node .github/scripts/populate-secrets.js staging)
+          set -euo pipefail
+          SECRET_JSON="$(node .github/scripts/populate-secrets.js staging)"
+          export SECRET_JSON
+          node -e "\
+            const s = process.env.SECRET_JSON;\
+            if (s == null || !String(s).trim()) {\
+              console.error('Populate secrets produced empty SECRET_JSON');\
+              process.exit(1);\
+            }\
+            try { JSON.parse(s); } catch (e) {\
+              console.error('SECRET_JSON is not valid JSON:', e instanceof Error ? e.message : e);\
+              process.exit(1);\
+            }"
           aws secretsmanager put-secret-value \
             --secret-id staging-reimbursement-automation-secrets \
             --secret-string "$SECRET_JSON"
@@ -151,13 +175,25 @@ jobs:
       - name: CDK Deploy to Prod
         run: |
           cd iac
-          bunx cdk deploy --all --context environment=prod --require-approval never
+          bunx aws-cdk@2.1112.0 deploy --all --context environment=prod --require-approval never
         env:
           CDK_DEFAULT_REGION: us-west-2
 
       - name: Populate secrets in AWS Secrets Manager
         run: |
-          SECRET_JSON=$(node .github/scripts/populate-secrets.js prod)
+          set -euo pipefail
+          SECRET_JSON="$(node .github/scripts/populate-secrets.js prod)"
+          export SECRET_JSON
+          node -e "\
+            const s = process.env.SECRET_JSON;\
+            if (s == null || !String(s).trim()) {\
+              console.error('Populate secrets produced empty SECRET_JSON');\
+              process.exit(1);\
+            }\
+            try { JSON.parse(s); } catch (e) {\
+              console.error('SECRET_JSON is not valid JSON:', e instanceof Error ? e.message : e);\
+              process.exit(1);\
+            }"
           aws secretsmanager put-secret-value \
             --secret-id prod-reimbursement-automation-secrets \
             --secret-string "$SECRET_JSON"

@@ -2,7 +2,7 @@ import { Annotations } from 'aws-cdk-lib';
 import { DefinitionBody, StateMachine } from 'aws-cdk-lib/aws-stepfunctions';
 import { Construct } from 'constructs';
 import { getResourceName } from '../../config/global-config';
-import { IacErrors } from '../../errors';
+import { IacConfigError, IacErrors } from '../../errors';
 import { getDefinitionBodyFromASL } from '../../helpers/asl-utils';
 import type { StateMachineInfo, StepFunctionsProps } from './stepfunctions-types';
 
@@ -28,14 +28,9 @@ export class StepFunctions extends Construct {
       let definitionString: string;
       try {
         definitionString = getDefinitionBodyFromASL(name, config, resolvedTemplateDir);
-        JSON.parse(definitionString);
       } catch (error) {
-        if (error instanceof SyntaxError) {
-          throw IacErrors.config(
-            `Step Function ASL is invalid JSON: ${error.message}`,
-            `${resolvedTemplateDir}/${name}.json.mustache`,
-            error
-          );
+        if (error instanceof IacConfigError) {
+          throw error;
         }
         throw IacErrors.create(`Failed to build Step Function definition for ${name}`, error, {
           stateMachineName: name,

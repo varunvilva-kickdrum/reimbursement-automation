@@ -1,7 +1,7 @@
 [project]
-name = "reimbursements-app"
+name = "reimbursement-automation-app"
 version = "0.1.0"
-description = "Python app (lambdas) for reimbursement pipeline"
+description = "Python app (Lambdas) for reimbursement-automation"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

@@ -33,7 +33,9 @@ CloudFormation **stack** name prefix is **`ReimbursementAutomationStack`** (`con
 
 `synth` runs **[cdk-nag](https://github.com/cdklabs/cdk-nag)** `AwsSolutionsChecks` from `bin/app.ts`. Documented suppressions are in `lib/helpers/nag.ts`. Verbose nag logging: `CDK_NAG_VERBOSE=1 bunx cdk synth ...`.
 
-Merged `reimbursementStackConfig.json` is validated with **Zod** (`lib/config/reimbursement-stack-schema.ts`, strict top-level keys).
+Merged `reimbursement-automation-stack-config.json` is validated with **Zod** (`lib/config/reimbursement-automation-stack-schema.ts`, strict top-level keys).
+
+`stepFunction.tracingEnabled` defaults to `false` in `configs/default/reimbursement-automation-stack-config.json` (including the **pipeline** state machine). **`configs/dev/reimbursement-automation-stack-config.json`** and **`configs/staging/reimbursement-automation-stack-config.json`** set it to **`true`** so X-Ray can aid debugging; use `false` in prod if you prefer to avoid trace cost.
 
 ## Deploy locally
 

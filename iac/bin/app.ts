@@ -7,7 +7,7 @@ import { ConfigDirRelativeFromBin, formatStackDescription, stackConstructId } fr
 import { getConfig } from '../lib/config';
 import { applyReimbursementAutomationNagSuppressions } from '../lib/helpers/nag';
 import { applyTags } from '../lib/helpers/tag';
-import { ReimbursementStack } from '../lib/stacks/reimbursement-stack';
+import { ReimbursementStack } from '../lib/stacks/reimbursement-automation-stack';
 
 const app = new cdk.App();
 const configDir = path.join(__dirname, ConfigDirRelativeFromBin);
@@ -15,9 +15,11 @@ const config = getConfig(app, configDir);
 
 applyTags(app, config);
 
-const stack = new ReimbursementStack(app, stackConstructId(config.environment), {
+const stackId = stackConstructId(config.environment);
+const stack = new ReimbursementStack(app, stackId, {
   config,
   baseConfigDir: configDir,
+  stackName: stackId,
   env: {
     account: config.account,
     region: config.region,
