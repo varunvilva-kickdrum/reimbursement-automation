@@ -6,8 +6,8 @@ export const TagKey = {
 } as const;
 
 export const TagValue = {
-  Project: 'Reimbursements-Automation',
-  Team: 'Reimbursements-Automation',
+  Project: 'reimbursement-automation',
+  Team: 'reimbursement-automation',
   Purpose: 'Org-Initiative',
 } as const;
 

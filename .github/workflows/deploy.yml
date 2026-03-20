@@ -30,6 +30,12 @@ jobs:
           cd iac
           bun install --frozen-lockfile
 
+      - name: Lint and format check IAC
+        run: |
+          cd iac
+          bun run lint
+          bun run format:check
+
       - name: Build IAC
         run: |
           cd iac
@@ -49,6 +55,15 @@ jobs:
         env:
           CDK_DEFAULT_REGION: us-west-2
 
+      - name: Populate secrets in AWS Secrets Manager
+        run: |
+          SECRET_JSON=$(node .github/scripts/populate-secrets.js dev)
+          aws secretsmanager put-secret-value \
+            --secret-id dev-reimbursement-automation-secrets \
+            --secret-string "$SECRET_JSON"
+        env:
+          REIMBURSEMENT_AUTOMATION_API_KEY: ${{ secrets.REIMBURSEMENT_AUTOMATION_API_KEY_DEV }}
+
   deploy_staging:
     if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
@@ -64,6 +79,12 @@ jobs:
         run: |
           cd iac
           bun install --frozen-lockfile
+
+      - name: Lint and format check IAC
+        run: |
+          cd iac
+          bun run lint
+          bun run format:check
 
       - name: Build IAC
         run: |
@@ -84,6 +105,15 @@ jobs:
         env:
           CDK_DEFAULT_REGION: us-west-2
 
+      - name: Populate secrets in AWS Secrets Manager
+        run: |
+          SECRET_JSON=$(node .github/scripts/populate-secrets.js staging)
+          aws secretsmanager put-secret-value \
+            --secret-id staging-reimbursement-automation-secrets \
+            --secret-string "$SECRET_JSON"
+        env:
+          REIMBURSEMENT_AUTOMATION_API_KEY: ${{ secrets.REIMBURSEMENT_AUTOMATION_API_KEY_STAGING }}
+
   deploy_prod:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
     runs-on: ubuntu-latest
@@ -99,6 +129,12 @@ jobs:
         run: |
           cd iac
           bun install --frozen-lockfile
+
+      - name: Lint and format check IAC
+        run: |
+          cd iac
+          bun run lint
+          bun run format:check
 
       - name: Build IAC
         run: |
@@ -118,3 +154,12 @@ jobs:
           bunx cdk deploy --all --context environment=prod --require-approval never
         env:
           CDK_DEFAULT_REGION: us-west-2
+
+      - name: Populate secrets in AWS Secrets Manager
+        run: |
+          SECRET_JSON=$(node .github/scripts/populate-secrets.js prod)
+          aws secretsmanager put-secret-value \
+            --secret-id prod-reimbursement-automation-secrets \
+            --secret-string "$SECRET_JSON"
+        env:
+          REIMBURSEMENT_AUTOMATION_API_KEY: ${{ secrets.REIMBURSEMENT_AUTOMATION_API_KEY_PROD }}

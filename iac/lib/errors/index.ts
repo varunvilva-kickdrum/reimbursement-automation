@@ -51,4 +51,7 @@ export const IacErrors = {
     new IacEnvironmentError(message, environment, cause),
   lambda: (message: string, operation?: string, cause?: unknown): IacLambdaError =>
     new IacLambdaError(message, operation, cause),
+  /** Non-specific IAC failure (wraps unknown errors from CDK / IO / parsing). */
+  create: (message: string, cause?: unknown, context?: Record<string, unknown>): IacError =>
+    new IacError(message, cause, context),
 };

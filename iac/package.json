@@ -1,5 +1,5 @@
 {
-  "name": "reimbursements-iac",
+  "name": "reimbursement-automation-iac",
   "version": "1.0.0",
   "private": true,
   "lint-staged": {
@@ -25,11 +25,15 @@
   },
   "dependencies": {
     "aws-cdk-lib": "^2.170.0",
-    "constructs": "^10.4.2"
+    "cdk-nag": "^2.37.55",
+    "constructs": "^10.4.2",
+    "mustache": "^4.2.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "aws-cdk": "^2.170.0",
     "typescript": "^5.4.0",
+    "@types/mustache": "^4.2.5",
     "@types/node": "^20.12.7",
     "eslint": "^9.0.0",
     "@typescript-eslint/parser": "^7.0.0",

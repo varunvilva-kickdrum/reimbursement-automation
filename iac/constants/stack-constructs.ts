@@ -4,8 +4,8 @@ export const ConstructId = {
 } as const;
 
 export const StackNaming = {
-  IdPrefix: 'ReimbursementStack',
-  DescriptionTemplate: 'Reimbursement pipeline ({0})',
+  IdPrefix: 'ReimbursementAutomationStack',
+  DescriptionTemplate: 'Reimbursement automation ({0})',
 } as const;
 
 export function formatStackDescription(environment: string): string {

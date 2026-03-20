@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 import * as path from 'node:path';
 import * as cdk from 'aws-cdk-lib';
+import { Aspects } from 'aws-cdk-lib';
+import { AwsSolutionsChecks } from 'cdk-nag';
 import { ConfigDirRelativeFromBin, formatStackDescription, stackConstructId } from '../constants';
 import { getConfig } from '../lib/config';
+import { applyReimbursementAutomationNagSuppressions } from '../lib/helpers/nag';
 import { applyTags } from '../lib/helpers/tag';
 import { ReimbursementStack } from '../lib/stacks/reimbursement-stack';
 
@@ -12,7 +15,7 @@ const config = getConfig(app, configDir);
 
 applyTags(app, config);
 
-new ReimbursementStack(app, stackConstructId(config.environment), {
+const stack = new ReimbursementStack(app, stackConstructId(config.environment), {
   config,
   baseConfigDir: configDir,
   env: {
@@ -21,3 +24,6 @@ new ReimbursementStack(app, stackConstructId(config.environment), {
   },
   description: formatStackDescription(config.environment),
 });
+
+Aspects.of(app).add(new AwsSolutionsChecks({ verbose: process.env.CDK_NAG_VERBOSE === '1' }));
+applyReimbursementAutomationNagSuppressions(stack);
