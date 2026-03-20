@@ -4,15 +4,12 @@ import { Construct } from 'constructs';
 import { getResourceName } from '../../config/global-config';
 import { IacErrors } from '../../errors';
 import { getDefinitionBodyFromASL } from '../../helpers/asl-utils';
-import type {
-  ReimbursementStepFunctionsProps,
-  StateMachineInfo,
-} from './reimbursement-stepfunctions-types';
+import type { StateMachineInfo, StepFunctionsProps } from './stepfunctions-types';
 
-export class ReimbursementStepFunctions extends Construct {
+export class StepFunctions extends Construct {
   readonly stateMachines: Map<string, StateMachineInfo> = new Map();
 
-  constructor(scope: Construct, id: string, props: ReimbursementStepFunctionsProps) {
+  constructor(scope: Construct, id: string, props: StepFunctionsProps) {
     super(scope, id);
 
     const { config, iam, resolvedTemplateDir } = props;

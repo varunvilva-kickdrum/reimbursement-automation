@@ -10,16 +10,16 @@ import type { Config } from '../../config/config';
 import { getResourceName } from '../../config/global-config';
 import { IacErrors } from '../../errors';
 import type { Lambda } from '../lambda/lambda';
-import type { ReimbursementStepFunctions } from '../stepfunctions/reimbursement-stepfunctions';
+import type { StepFunctions } from '../stepfunctions/stepfunctions';
 
-export interface ReimbursementSchedulesProps {
+export interface SchedulesProps {
   readonly config: Config;
   readonly lambda: Lambda;
-  readonly stepFunctions: ReimbursementStepFunctions;
+  readonly stepFunctions: StepFunctions;
 }
 
-export class ReimbursementSchedules extends Construct {
-  constructor(scope: Construct, id: string, props: ReimbursementSchedulesProps) {
+export class Schedules extends Construct {
+  constructor(scope: Construct, id: string, props: SchedulesProps) {
     super(scope, id);
 
     const { config, lambda, stepFunctions } = props;

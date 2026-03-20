@@ -1,10 +1,10 @@
 import type { StateMachine } from 'aws-cdk-lib/aws-stepfunctions';
 import type { Config } from '../../config/config';
-import type { ReimbursementIam } from '../iam/reimbursement-iam';
+import type { Iam } from '../iam/iam';
 
-export interface ReimbursementStepFunctionsProps {
+export interface StepFunctionsProps {
   readonly config: Config;
-  readonly iam: ReimbursementIam;
+  readonly iam: Iam;
   readonly resolvedTemplateDir: string;
 }
 

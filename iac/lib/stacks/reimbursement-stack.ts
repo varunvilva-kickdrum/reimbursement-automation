@@ -2,13 +2,13 @@ import * as path from 'node:path';
 import { CfnOutput, Stack, type StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { ConstructId, PathSegment, RepoLayout, ResourceName } from '../../constants';
-import { ReimbursementSchedules } from '../components/eventbridge/reimbursement-schedules';
-import { ReimbursementDynamoDB } from '../components/dynamodb/reimbursement-dynamodb';
-import { ReimbursementIam } from '../components/iam/reimbursement-iam';
+import { Schedules } from '../components/eventbridge/schedules';
+import { DynamoDB } from '../components/dynamodb/dynamodb';
+import { Iam } from '../components/iam/iam';
 import { Lambda } from '../components/lambda/lambda';
-import { ReimbursementS3 } from '../components/s3/reimbursement-s3';
+import { S3 } from '../components/s3/s3';
 import { ReimbursementSecretsManager } from '../components/secrets-manager/secrets-manager';
-import { ReimbursementStepFunctions } from '../components/stepfunctions/reimbursement-stepfunctions';
+import { StepFunctions } from '../components/stepfunctions/stepfunctions';
 import type { Config } from '../config/config';
 import { getResourceName } from '../config/global-config';
 
@@ -19,12 +19,12 @@ export interface ReimbursementStackProps extends StackProps {
 
 export class ReimbursementStack extends Stack {
   readonly lambda: Lambda;
-  readonly iam: ReimbursementIam;
-  readonly s3: ReimbursementS3;
-  readonly dynamodb: ReimbursementDynamoDB;
+  readonly iam: Iam;
+  readonly s3: S3;
+  readonly dynamodb: DynamoDB;
   readonly secretsManager: ReimbursementSecretsManager;
-  readonly stepFunctions: ReimbursementStepFunctions;
-  readonly schedules: ReimbursementSchedules;
+  readonly stepFunctions: StepFunctions;
+  readonly schedules: Schedules;
 
   constructor(scope: Construct, id: string, props: ReimbursementStackProps) {
     super(scope, id, {
@@ -53,16 +53,16 @@ export class ReimbursementStack extends Stack {
 
     const secretsEnabled = config.stack.secrets?.enabled !== false;
 
-    this.iam = new ReimbursementIam(this, 'Iam', { config });
-    this.s3 = new ReimbursementS3(this, 'S3', { config });
-    this.dynamodb = new ReimbursementDynamoDB(this, 'DynamoDB', { config });
+    this.iam = new Iam(this, 'Iam', { config });
+    this.s3 = new S3(this, 'S3', { config });
+    this.dynamodb = new DynamoDB(this, 'DynamoDB', { config });
     this.secretsManager = new ReimbursementSecretsManager(this, 'Secrets', {
       config,
       baseConfigDir,
       enabled: secretsEnabled,
     });
 
-    this.stepFunctions = new ReimbursementStepFunctions(this, 'StepFunctions', {
+    this.stepFunctions = new StepFunctions(this, 'StepFunctions', {
       config,
       iam: this.iam,
       resolvedTemplateDir,
@@ -97,7 +97,7 @@ export class ReimbursementStack extends Stack {
       }
     }
 
-    this.schedules = new ReimbursementSchedules(this, 'EventBridgeSchedules', {
+    this.schedules = new Schedules(this, 'EventBridgeSchedules', {
       config,
       lambda: this.lambda,
       stepFunctions: this.stepFunctions,

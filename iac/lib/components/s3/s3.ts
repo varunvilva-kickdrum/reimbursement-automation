@@ -7,15 +7,15 @@ import type { Config } from '../../config/config';
 import { RemovalPolicyType } from '../../config/config';
 import { getResourceName } from '../../config/global-config';
 
-export interface ReimbursementS3Props {
+export interface S3Props {
   readonly config: Config;
 }
 
-export class ReimbursementS3 extends Construct {
+export class S3 extends Construct {
   /** Logical bucket config name → CDK bucket */
   readonly buckets: Map<string, Bucket> = new Map();
 
-  constructor(scope: Construct, id: string, props: ReimbursementS3Props) {
+  constructor(scope: Construct, id: string, props: S3Props) {
     super(scope, id);
 
     const { config } = props;

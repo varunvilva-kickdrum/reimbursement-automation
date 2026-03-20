@@ -7,14 +7,14 @@ import {
 import type { Config } from '../../config/config';
 import { getResourceName } from '../../config/global-config';
 
-export interface ReimbursementIamProps {
+export interface IamProps {
   readonly config: Config;
 }
 
-export class ReimbursementIam extends Construct {
+export class Iam extends Construct {
   readonly stepFunctionExecutionRole: Role;
 
-  constructor(scope: Construct, id: string, props: ReimbursementIamProps) {
+  constructor(scope: Construct, id: string, props: IamProps) {
     super(scope, id);
 
     const { config } = props;

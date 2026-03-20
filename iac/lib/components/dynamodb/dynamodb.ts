@@ -5,7 +5,7 @@ import type { Config } from '../../config/config';
 import { RemovalPolicyType } from '../../config/config';
 import { getResourceName } from '../../config/global-config';
 
-export interface ReimbursementDynamoDBProps {
+export interface DynamoDBProps {
   readonly config: Config;
 }
 
@@ -15,10 +15,10 @@ export interface LockTableInfo {
   readonly tableArn: string;
 }
 
-export class ReimbursementDynamoDB extends Construct {
+export class DynamoDB extends Construct {
   readonly lockTable: LockTableInfo;
 
-  constructor(scope: Construct, id: string, props: ReimbursementDynamoDBProps) {
+  constructor(scope: Construct, id: string, props: DynamoDBProps) {
     super(scope, id);
 
     const { config } = props;
