@@ -403,12 +403,7 @@ export class Iam extends Construct {
     );
   }
 
-  private addDynamoDbPolicy(
-    role: Role,
-    sid: string,
-    tableArn: string,
-    actions: string[]
-  ): void {
+  private addDynamoDbPolicy(role: Role, sid: string, tableArn: string, actions: string[]): void {
     role.addToPrincipalPolicy(
       new PolicyStatement({
         sid,

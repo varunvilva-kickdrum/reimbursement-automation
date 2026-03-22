@@ -46,9 +46,7 @@ export class Sqs extends Construct {
       retentionPeriod: Duration.days(7),
       removalPolicy: removal,
       enforceSSL: true,
-      deadLetterQueue: this.dlq
-        ? { queue: this.dlq, maxReceiveCount: 3 }
-        : undefined,
+      deadLetterQueue: this.dlq ? { queue: this.dlq, maxReceiveCount: 3 } : undefined,
     });
   }
 }

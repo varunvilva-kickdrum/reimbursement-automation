@@ -1,9 +1,5 @@
 import { CfnOutput } from 'aws-cdk-lib';
-import {
-  CorsHttpMethod,
-  HttpApi,
-  HttpMethod,
-} from 'aws-cdk-lib/aws-apigatewayv2';
+import { CorsHttpMethod, HttpApi, HttpMethod } from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpSqsIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import type { IRole } from 'aws-cdk-lib/aws-iam';
 import type { IQueue } from 'aws-cdk-lib/aws-sqs';
