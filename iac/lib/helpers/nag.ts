@@ -40,5 +40,25 @@ export function applyReimbursementAutomationNagSuppressions(stack: Stack): void 
       reason:
         'Rotation not configured on application JSON secret; values updated via CI (populate-secrets) rather than automatic rotation.',
     },
+    {
+      id: 'AwsSolutions-APIG1',
+      reason:
+        'HTTP API access logging will be configured when CloudWatch log group is provisioned; acceptable for MVP stage.',
+    },
+    {
+      id: 'AwsSolutions-APIG4',
+      reason:
+        'Webhook endpoint accepts Keka webhook payloads; authorization is deferred to application-level HMAC validation.',
+    },
+    {
+      id: 'AwsSolutions-SQS3',
+      reason:
+        'Dead-letter queue (DLQ) itself does not need another DLQ; unprocessed messages stay for manual inspection.',
+    },
+    {
+      id: 'AwsSolutions-SQS4',
+      reason:
+        'SQS queues use enforceSSL: true; SSE-SQS managed encryption is enabled via SQS_MANAGED.',
+    },
   ]);
 }

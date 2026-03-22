@@ -2,6 +2,7 @@ export * from './app-paths';
 export * from './cdk-context';
 export * from './eventbridge';
 export * from './filesystem';
+export * from './iam';
 export * from './lambda-cdk';
 export * from './messages';
 export * from './resource-names';

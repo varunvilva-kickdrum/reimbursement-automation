@@ -13,6 +13,60 @@
         "s3Buckets": [],
         "lockTableAccess": false,
         "secretsAccess": false
+      },
+      {
+        "name": "ingestion_lambda",
+        "timeout": 60,
+        "memorySize": 256,
+        "s3Buckets": ["data"],
+        "lockTableAccess": false,
+        "secretsAccess": true,
+        "role": "ingestion-lambda-role"
+      },
+      {
+        "name": "extraction_lambda",
+        "timeout": 120,
+        "memorySize": 512,
+        "s3Buckets": ["data"],
+        "lockTableAccess": false,
+        "secretsAccess": true,
+        "role": "extraction-lambda-role"
+      },
+      {
+        "name": "validation_lambda",
+        "timeout": 60,
+        "memorySize": 256,
+        "s3Buckets": ["data"],
+        "lockTableAccess": false,
+        "secretsAccess": false,
+        "role": "validation-lambda-role"
+      },
+      {
+        "name": "reporting_lambda",
+        "timeout": 120,
+        "memorySize": 256,
+        "s3Buckets": ["data"],
+        "lockTableAccess": false,
+        "secretsAccess": true,
+        "role": "reporting-lambda-role"
+      },
+      {
+        "name": "notification_lambda",
+        "timeout": 30,
+        "memorySize": 128,
+        "s3Buckets": [],
+        "lockTableAccess": false,
+        "secretsAccess": true,
+        "role": "notification-lambda-role"
+      },
+      {
+        "name": "config_sync_lambda",
+        "timeout": 60,
+        "memorySize": 128,
+        "s3Buckets": ["data"],
+        "lockTableAccess": false,
+        "secretsAccess": true,
+        "role": "config-sync-lambda-role"
       }
     ]
   },
@@ -29,27 +83,67 @@
       "name": "execution-locks",
       "partitionKeyName": "lock_key",
       "ttlAttributeName": "ttl"
+    },
+    "claimsTable": {
+      "name": "claims",
+      "partitionKeyName": "pk",
+      "sortKeyName": "sk"
     }
   },
   "secrets": {
+    "enabled": true
+  },
+  "sqs": {
+    "enabled": true,
+    "queueName": "webhook-queue",
+    "dlqEnabled": true
+  },
+  "sns": {
+    "enabled": true,
+    "topicName": "notification-topic"
+  },
+  "apiGateway": {
+    "enabled": true
+  },
+  "pipes": {
     "enabled": true
   },
   "stepFunction": {
     "enabled": true,
     "templatePath": "templates/step-functions",
     "tracingEnabled": false,
-    "invokeLambdaFunctionNames": ["test_lambda"],
+    "invokeLambdaFunctionNames": [
+      "test_lambda",
+      "ingestion_lambda",
+      "extraction_lambda",
+      "validation_lambda"
+    ],
     "stateMachines": [
       {
         "name": "pipeline",
         "enabled": true,
-        "description": "reimbursement-automation orchestration (test Lambda smoke task)"
+        "description": "reimbursement-automation orchestration pipeline"
       }
     ]
   },
   "eventBridge": {
-    "enabled": false,
-    "schedules": []
+    "enabled": true,
+    "schedules": [
+      {
+        "id": "monthly-report",
+        "enabled": true,
+        "scheduleExpression": "cron(0 10 6 * ? *)",
+        "targetType": "LAMBDA",
+        "lambdaFunctionName": "reporting_lambda"
+      },
+      {
+        "id": "config-sync",
+        "enabled": true,
+        "scheduleExpression": "cron(0 8 1 * ? *)",
+        "targetType": "LAMBDA",
+        "lambdaFunctionName": "config_sync_lambda"
+      }
+    ]
   },
   "tags": {
     "Project": "reimbursement-automation",

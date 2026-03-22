@@ -9,19 +9,30 @@ export interface DynamoDBProps {
   readonly config: Config;
 }
 
-export interface LockTableInfo {
+export interface TableInfo {
   readonly table: Table;
   readonly tableName: string;
   readonly tableArn: string;
 }
 
 export class DynamoDB extends Construct {
-  readonly lockTable: LockTableInfo;
+  readonly lockTable: TableInfo;
+  readonly claimsTable?: TableInfo;
 
   constructor(scope: Construct, id: string, props: DynamoDBProps) {
     super(scope, id);
 
     const { config } = props;
+    const removal =
+      config.stack.removalPolicy === RemovalPolicyType.Retain
+        ? RemovalPolicy.RETAIN
+        : RemovalPolicy.DESTROY;
+
+    this.lockTable = this.createLockTable(config, removal);
+    this.claimsTable = this.createClaimsTable(config, removal);
+  }
+
+  private createLockTable(config: Config, removal: RemovalPolicy): TableInfo {
     const lock = config.stack.dynamodb.lockTable;
     const tableName = getResourceName(lock.name, config);
     const partitionKey = lock.partitionKeyName ?? 'lock_key';
@@ -33,18 +44,9 @@ export class DynamoDB extends Construct {
       billingMode: BillingMode.PAY_PER_REQUEST,
       encryption: TableEncryption.AWS_MANAGED,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
-      removalPolicy:
-        config.stack.removalPolicy === RemovalPolicyType.Retain
-          ? RemovalPolicy.RETAIN
-          : RemovalPolicy.DESTROY,
+      removalPolicy: removal,
       timeToLiveAttribute: ttl,
     });
-
-    this.lockTable = {
-      table,
-      tableName: table.tableName,
-      tableArn: table.tableArn,
-    };
 
     const exportPrefix = getResourceName(lock.name, config);
     new CfnOutput(this, 'LockTableName', {
@@ -57,5 +59,39 @@ export class DynamoDB extends Construct {
       description: 'DynamoDB lock table ARN',
       exportName: `${exportPrefix}-arn`,
     });
+
+    return { table, tableName: table.tableName, tableArn: table.tableArn };
+  }
+
+  private createClaimsTable(config: Config, removal: RemovalPolicy): TableInfo | undefined {
+    const claims = config.stack.dynamodb.claimsTable;
+    if (!claims) {
+      return undefined;
+    }
+
+    const tableName = getResourceName(claims.name, config);
+    const table = new Table(this, 'ClaimsTable', {
+      tableName,
+      partitionKey: { name: claims.partitionKeyName, type: AttributeType.STRING },
+      sortKey: { name: claims.sortKeyName, type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      encryption: TableEncryption.AWS_MANAGED,
+      pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+      removalPolicy: removal,
+    });
+
+    const exportPrefix = getResourceName(claims.name, config);
+    new CfnOutput(this, 'ClaimsTableName', {
+      value: table.tableName,
+      description: 'DynamoDB claims table name',
+      exportName: `${exportPrefix}-name`,
+    });
+    new CfnOutput(this, 'ClaimsTableArn', {
+      value: table.tableArn,
+      description: 'DynamoDB claims table ARN',
+      exportName: `${exportPrefix}-arn`,
+    });
+
+    return { table, tableName: table.tableName, tableArn: table.tableArn };
   }
 }
