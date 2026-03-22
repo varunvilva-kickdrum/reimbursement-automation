@@ -134,7 +134,7 @@ export class Iam extends Construct {
     this.attachStepFunctionPolicies(config);
 
     if (resources) {
-      this.attachResourcePolicies(resources, config);
+      this.attachResourcePolicies(resources);
     }
   }
 
@@ -142,7 +142,7 @@ export class Iam extends Construct {
    * Attach fine-grained policies once resource construct references are available.
    * Called from the stack after all resource constructs are created.
    */
-  attachResourcePolicies(resources: IamResourceRefs, config: Config): void {
+  attachResourcePolicies(resources: IamResourceRefs): void {
     const { dataBucket, claimsTableArn, webhookQueue, notificationTopic, secret } = resources;
 
     if (dataBucket) {
