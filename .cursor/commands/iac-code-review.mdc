@@ -1,0 +1,88 @@
+---
+description: Production IAC review — lint/tsc loop, CDK quality, tags, constants, types
+---
+
+# IAC code review (`iac/`)
+
+Run a **full production-style review** of **`iac/`** (TypeScript CDK). Do not scope creep into `app/` unless a change is required to fix an IAC issue.
+
+## 1. Automated gates — fix and re-run until clean
+
+Execute from the **`iac/`** directory (use the repo’s package manager: `npm`, `pnpm`, or `bun` as appropriate).
+
+1. **`tsc` (required)**  
+   - Run: `npx tsc --noEmit` (or `npm run build` and ensure no errors).  
+   - If it fails: **fix the TypeScript errors**, then **run again** until exit code 0.
+
+2. **ESLint (required)**  
+   - Run: `npm run lint` (or `eslint . --ext .ts`).  
+   - If it fails: run **`npm run lint:fix`** where safe, **manually fix** what autofix cannot, then **re-run `npm run lint`** until exit code 0.
+
+3. **Prettier check (recommended)**  
+   - Run: `npm run format:check` (or `prettier --check .`).  
+   - If it fails: run `npm run format`, then re-run the check.
+
+4. **CDK synth (recommended if credentials/context allow)**  
+   - After `npm run build`: `npx cdk synth` (with typical `--context environment=dev` if your app requires it).  
+   - If synth fails: fix IAC or document a clear blocker (e.g. missing account in `cdk.json`).
+
+**Loop rule:** For lint and tsc, **do not stop at the first failure** — correct code, then **repeat the same commands** until they pass (max reasonable iterations; escalate if stuck on environment/config).
+
+---
+
+## 2. Code quality
+
+| Check | Action |
+|-------|--------|
+| **Complexity** | Flag functions with deep nesting, long methods, or many branches; suggest extraction. |
+| **`any` / loose types** | Grep for `any`, unchecked `as` casts, `unknown` without narrowing. Prefer proper types, generics, `satisfies`, `readonly`. |
+| **`interface` vs `type`** | Prefer `interface` for object shapes that may extend; `type` for unions/aliases. Be consistent with existing `iac/` style. |
+| **Dead code** | Remove unused exports, unreachable branches, commented-out blocks. |
+| **Errors** | User-facing and operational messages should be centralized (e.g. constants/messages), not scattered magic strings in `lib/`. |
+| **Imports** | No circular deps; prefer barrels where the project already uses them. |
+
+---
+
+## 3. Constants, enums, and strings
+
+| Check | Action |
+|-------|--------|
+| **Enums** | New domain enums live under **`iac/enums/`** and are exported from the barrel. No duplicate string unions that should be enums. |
+| **Constants** | Magic strings, numbers, context keys, construct IDs, tag keys, file names, and CDK defaults belong in **`iac/constants/`** (or the project’s agreed constants layout). |
+| **Hardcoded strings** | Flag inline literals used for resource naming, tags, error text, paths, and config keys — move to named constants unless truly one-off and local. |
+| **Config vs code** | Environment-specific values should come from **config / CDK context**, not hardcoded per environment in TS. |
+
+---
+
+## 4. AWS CDK — resources and tags
+
+| Check | Action |
+|-------|--------|
+| **Tags on new resources** | Any **new** construct or resource must receive tags **consistent with the rest of the stack**. If the app uses `Tags.of(app).add(...)` or `applyTags`, confirm **new resources still inherit** (tag propagation). If a construct is created outside that scope, **explicitly tag it** with the same standard tags (`Environment`, `Project`, etc.). |
+| **Naming** | Physical names use the project’s pattern (e.g. env-prefixed); no collisions across environments. |
+| **Removal policies** | `DESTROY` vs `RETAIN` appropriate for data-bearing resources. |
+| **Least privilege** | IAM policies scoped; avoid `Resource: '*'` unless justified. |
+
+---
+
+## 5. Additional production checks
+
+- **Secrets:** No API keys, passwords, or long-lived tokens in source; use Secrets Manager/SSM/params.  
+- **Drift:** New resources align with existing **config-driven** patterns (e.g. Lambdas from JSON config).  
+- **Documentation:** If behavior or deploy steps change, update **`iac/README.md`** or **`docs/DEPLOYMENT.md`**.  
+- **Dependencies:** CDK/constructs versions consistent; no unnecessary new deps.  
+- **Idempotency:** Deployments safe to repeat; no reliance on one-off manual console steps.
+
+---
+
+## 6. Report format
+
+Reply with:
+
+1. **Status:** PASS (all gates green) or PASS WITH NOTES / FAIL.  
+2. **Automated gates:** What ran and final result (tsc, eslint, prettier, synth).  
+3. **Findings:** Table — Severity (blocker / major / minor) | Area | File | Issue | Suggested fix.  
+4. **Changes made:** Bullet list of edits (if any).  
+5. **Follow-ups:** Optional tests, cdk-nag, or CI steps.
+
+---

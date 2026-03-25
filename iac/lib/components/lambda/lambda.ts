@@ -1,16 +1,19 @@
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Function as LambdaFunction, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-import { lambdaConstants } from '../../constants/lambda-constants';
+import {
+  ConstructId,
+  LambdaComponentMessage,
+  LambdaComponentOperation,
+  LambdaLayer,
+  lambdaRuntimeBundle,
+} from '../../../constants';
+import type { Config } from '../../config/config';
 import { getResourceName } from '../../config/global-config';
 import { LambdaBuilder } from '../../helpers/lambda-builder';
-import type { Config } from '../../config/config';
-import type { LambdaProps, BuiltLambdaFunction } from './lambda-types';
+import { IacErrors } from '../../errors';
+import type { BuiltLambdaFunction, LambdaProps } from './lambda-types';
 
-/**
- * Lambda component: creates Lambda functions from config (one per *_lambda folder).
- * Attaches a shared layer (lambda/shared) so all functions can use common code.
- */
 export class Lambda extends Construct {
   readonly functions: BuiltLambdaFunction[] = [];
   private readonly config: Config;
@@ -20,9 +23,9 @@ export class Lambda extends Construct {
     scope: Construct,
     id: string,
     props: LambdaProps & {
-      resolvedFunctionsPath: string;
-      resolvedSharedPath: string;
-      resolvedBuildDir: string;
+      readonly resolvedFunctionsPath: string;
+      readonly resolvedSharedPath: string;
+      readonly resolvedBuildDir: string;
     }
   ) {
     super(scope, id);
@@ -36,10 +39,10 @@ export class Lambda extends Construct {
       props.resolvedSharedPath,
       props.resolvedBuildDir
     );
-    const sharedLayer = new LayerVersion(this, 'SharedLayer', {
+    const sharedLayer = new LayerVersion(this, ConstructId.SharedLayer, {
       code: layerResult.code,
-      description: 'Shared Python code for all Lambdas',
-      removalPolicy: RemovalPolicy.DESTROY, // Remove old layer version when a new one is deployed
+      description: LambdaLayer.Description,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     const toCreate = lambdaConfig.functions.filter((f) => f.enabled !== false);
@@ -52,9 +55,9 @@ export class Lambda extends Construct {
       const resourceName = getResourceName(functionConfig.name, this.config);
       const fn = new LambdaFunction(this, functionConfig.name, {
         functionName: resourceName,
-        runtime: lambdaConstants.DEFAULT_RUNTIME,
-        architecture: lambdaConstants.DEFAULT_ARCHITECTURE,
-        handler: lambdaConstants.DEFAULT_HANDLER,
+        runtime: lambdaRuntimeBundle.runtime,
+        architecture: lambdaRuntimeBundle.architecture,
+        handler: lambdaRuntimeBundle.handler,
         code: buildResult.code,
         timeout: Duration.seconds(functionConfig.timeout ?? lambdaConfig.defaultTimeout),
         memorySize: functionConfig.memorySize ?? lambdaConfig.defaultMemorySize,
@@ -71,7 +74,10 @@ export class Lambda extends Construct {
   getLambdaFunction(functionName: string): LambdaFunction {
     const child = this.node.tryFindChild(functionName);
     if (!child) {
-      throw new Error(`Lambda function not found: ${functionName}`);
+      throw IacErrors.lambda(
+        LambdaComponentMessage.functionNotFound(functionName),
+        LambdaComponentOperation.GetLambdaFunction
+      );
     }
     return child as LambdaFunction;
   }

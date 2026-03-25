@@ -1,6 +1,3 @@
-/**
- * Centralized errors for IAC (aligned with Ad-Results pattern).
- */
 export class IacError extends Error {
   public readonly timestamp: Date;
   public readonly context?: Record<string, unknown>;

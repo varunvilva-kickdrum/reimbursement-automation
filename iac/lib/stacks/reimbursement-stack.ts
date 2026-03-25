@@ -1,19 +1,15 @@
 import * as path from 'node:path';
 import { Stack, type StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import type { Config } from '../config/config';
+import { ConstructId, PathSegment, RepoLayout } from '../../constants';
 import { Lambda } from '../components/lambda/lambda';
+import type { Config } from '../config/config';
 
 export interface ReimbursementStackProps extends StackProps {
-  config: Config;
-  /** Directory containing configs (e.g. iac/configs). Used to resolve paths relative to repo. */
-  baseConfigDir: string;
+  readonly config: Config;
+  readonly baseConfigDir: string;
 }
 
-/**
- * Main reimbursement stack. Composes Lambda (and optionally Step Function) from config.
- * Different environments get different resources via configs/default + configs/{dev|staging|prod}.
- */
 export class ReimbursementStack extends Stack {
   readonly lambda: Lambda;
 
@@ -27,12 +23,19 @@ export class ReimbursementStack extends Stack {
     });
 
     const { config, baseConfigDir } = props;
-    const repoRoot = path.resolve(baseConfigDir, '..', '..');
+    const repoRootSegments = Array.from(
+      { length: PathSegment.ConfigToRepoDepth },
+      () => PathSegment.Parent
+    );
+    const repoRoot = path.resolve(baseConfigDir, ...repoRootSegments);
     const resolvedFunctionsPath = path.join(repoRoot, config.stack.lambda.functionsPath);
-    const resolvedSharedPath = path.join(path.dirname(resolvedFunctionsPath), 'shared');
+    const resolvedSharedPath = path.join(
+      path.dirname(resolvedFunctionsPath),
+      RepoLayout.SharedCodeDirName
+    );
     const resolvedBuildDir = path.join(repoRoot, config.stack.lambda.buildDirectory);
 
-    this.lambda = new Lambda(this, 'Lambda', {
+    this.lambda = new Lambda(this, ConstructId.Lambda, {
       config,
       resolvedFunctionsPath,
       resolvedSharedPath,
