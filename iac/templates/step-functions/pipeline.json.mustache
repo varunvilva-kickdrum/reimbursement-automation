@@ -1,0 +1,47 @@
+{
+  "Comment": "reimbursement-automation pipeline — invokes primary Lambda (smoke / orchestration entry)",
+  "StartAt": "RunTestLambda",
+  "States": {
+    "RunTestLambda": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": {{#GetLambdaArn}}test_lambda{{/GetLambdaArn}},
+        "Payload": {
+          "source": "step-functions",
+          "environment": "{{Environment}}"
+        }
+      },
+      "ResultSelector": {
+        "statusCode.$": "$.Payload.statusCode",
+        "body.$": "$.Payload.body"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleApplicationError"
+        }
+      ],
+      "End": true
+    },
+    "HandleApplicationError": {
+      "Type": "Fail",
+      "Error": "PipelineTaskFailed",
+      "Cause": "RunTestLambda failed or returned an error after retries; see execution history and $.error for details."
+    }
+  }
+}

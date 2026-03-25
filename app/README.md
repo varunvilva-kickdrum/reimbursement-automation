@@ -1,6 +1,6 @@
-# Reimbursements App
+# reimbursement-automation app
 
-Python app (Lambdas) for the reimbursement pipeline.
+Python app (Lambdas) for **reimbursement-automation**.
 
 ## Local setup (uv)
 

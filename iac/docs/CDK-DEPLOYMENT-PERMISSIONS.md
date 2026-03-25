@@ -206,9 +206,9 @@ Only **CloudFormation** can assume this role (via the bootstrap trust policy). S
 If the stack is in **ROLLBACK_FAILED** because the CFN exec role could not delete an IAM role:
 
 1. **Fix the CFN exec role** (add the policy in section 3 above) so it has `iam:DetachRolePolicy`, `iam:DeleteRolePolicy`, `iam:DeleteRole`.
-2. In **CloudFormation** in the AWS console, open the stack **ReimbursementStack-dev** → **Stack actions** → **Continue update rollback** (or delete the stack if you prefer to start fresh).
-3. If rollback still fails, delete the stuck IAM role manually: IAM → Roles → find **ReimbursementStack-dev-LambdatestlambdaServiceRole8-...** → Delete (you may need to detach policies from the role first).
-4. Then delete the CloudFormation stack **ReimbursementStack-dev** if it is still present.
+2. In **CloudFormation** in the AWS console, open the stack **ReimbursementAutomationStack-dev** → **Stack actions** → **Continue update rollback** (or delete the stack if you prefer to start fresh).
+3. If rollback still fails, delete the stuck IAM role manually: in **CloudFormation** → open the stack → **Events** and find the **failed** or **rollback** event that names the IAM role (resource type `AWS::IAM::Role`, note the **logical ID** and **physical ID**). In **IAM** → **Roles**, search for that **exact** physical role name (do not guess from examples), detach inline and managed policies if the console requires it, then delete the role.
+4. Then delete the CloudFormation stack **ReimbursementAutomationStack-dev** if it is still present.
 5. Fix the CFN exec role permissions (section 3), then run the pipeline again.
 
 ---

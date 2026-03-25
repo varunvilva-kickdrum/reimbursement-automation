@@ -242,7 +242,7 @@ wheels = [
 ]
 
 [[package]]
-name = "reimbursements-app"
+name = "reimbursement-automation-app"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

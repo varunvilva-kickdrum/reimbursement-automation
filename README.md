@@ -1,6 +1,6 @@
-# Reimbursement Automation
+# reimbursement-automation
 
-Monorepo for reimbursement pipeline: **app** (Python/Lambdas) and **iac** (CDK/TypeScript).
+Monorepo for the **reimbursement-automation** project: **app** (Python/Lambdas) and **iac** (CDK/TypeScript).
 
 ## Structure
 
@@ -47,7 +47,7 @@ bun run build
 bunx cdk deploy --all --context environment=dev --require-approval never
 ```
 
-- **`environment=dev`** deploys the dev stack (`ReimbursementStack-dev`). Use `staging` or `prod` for other environments.
+- **`environment=dev`** deploys the dev stack (`ReimbursementAutomationStack-dev`). Use `staging` or `prod` for other environments.
 - **`--require-approval never`** skips the interactive approval prompt (same as the CD pipeline).
 
 For permission errors (e.g. assume role, SSM, Lambda), see [iac/docs/CDK-DEPLOYMENT-PERMISSIONS.md](iac/docs/CDK-DEPLOYMENT-PERMISSIONS.md).
@@ -64,7 +64,7 @@ bunx cdk destroy --all --context environment=dev --force
 - **`environment=dev`** destroys the dev stack. Use `staging` or `prod` for that environment’s stack.
 - **`--force`** skips the “Are you sure?” confirmation.
 
-This deletes only the **application stack** (`ReimbursementStack-dev`). The **CDK bootstrap** resources (assets bucket, deploy/file-publishing/CFN exec roles) in the account remain. To remove those as well, delete the **CDKToolkit** (or `cdk-bootstrap`) CloudFormation stack in the AWS console for that account/region—only do this if you no longer plan to deploy any CDK apps there.
+This deletes only the **application stack** (`ReimbursementAutomationStack-dev`). The **CDK bootstrap** resources (assets bucket, deploy/file-publishing/CFN exec roles) in the account remain. To remove those as well, delete the **CDKToolkit** (or `cdk-bootstrap`) CloudFormation stack in the AWS console for that account/region—only do this if you no longer plan to deploy any CDK apps there.
 
 ## CI/CD
 

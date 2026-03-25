@@ -1,33 +1,47 @@
 # Deployment & GitHub Actions CD
 
-The CD pipeline (`.github/workflows/deploy.yml`) deploys the reimbursement stack to AWS when you push to `dev` or `staging`, or when you run the workflow manually for `production`. For GitHub Actions to deploy, it needs **credentials to assume an IAM role or use an IAM user** in your AWS account.
+The CD pipeline (`.github/workflows/deploy.yml`) deploys the **reimbursement-automation** stack to AWS when you push to `dev` or `staging`, or when you run the workflow manually for `production`. For GitHub Actions to deploy, it needs **credentials to assume an IAM role or use an IAM user** in your AWS account.
 
 ---
 
 ## What to configure in GitHub for CD
 
-| Where | What to add |
-|-------|-------------|
-| **Settings → Secrets and variables → Actions** | Repository secrets (or environment-specific secrets; see below). |
-| **Settings → Environments** (optional) | Create environments `dev`, `staging`, `production` so you can use environment-specific secrets and protection rules. |
+| Where                                          | What to add                                                                                                          |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Settings → Secrets and variables → Actions** | Repository secrets (or environment-specific secrets; see below).                                                     |
+| **Settings → Environments** (optional)         | Create environments `dev`, `staging`, `production` so you can use environment-specific secrets and protection rules. |
 
 ### Secrets required (repository secrets)
 
-For **dev** (push to `dev`), the workflow uses these **repository** secrets (no environment needed):
+For **dev** (push to `dev`), the workflow’s **Configure AWS credentials** step uses the GitHub **environment** `dev` and expects:
 
-| Secret name | Description |
-|-------------|-------------|
-| `AWS_ACCESS_KEY_ID` | IAM user access key ID. |
-| `AWS_SECRET_ACCESS_KEY` | IAM user secret access key. |
+| Secret name                  | Description                    |
+| ---------------------------- | ------------------------------ |
+| `AWS_ACCESS_KEY_ID_DEV`      | IAM user access key ID.        |
+| `AWS_SECRET_ACCESS_KEY_DEV`  | IAM user secret access key.    |
 
-Add them under **Settings → Secrets and variables → Actions → Repository secrets**. Staging/prod can use `AWS_ACCESS_KEY_ID_STAGING` / `AWS_SECRET_ACCESS_KEY_STAGING` etc. when you add those jobs.
+Configure these under **Settings → Environments → dev → Environment secrets** (or equivalent for your org). Staging and production use `AWS_ACCESS_KEY_ID_STAGING` / `AWS_SECRET_ACCESS_KEY_STAGING` and `AWS_ACCESS_KEY_ID_PROD` / `AWS_SECRET_ACCESS_KEY_PROD` respectively.
+
+### Application secrets (AWS Secrets Manager)
+
+CDK creates a secret named `{environment}-reimbursement-automation-secrets` with **placeholder** values. After each deploy, `.github/workflows/deploy.yml` runs `.github/scripts/populate-secrets.js`, which reads `iac/configs/secrets/secrets-config.json` (and optional `{environment}-secrets-config.json` overrides), maps each entry to a GitHub Actions environment variable, and calls `aws secretsmanager put-secret-value`.
+
+| GitHub secret (examples)                   | Used for                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------- |
+| `REIMBURSEMENT_AUTOMATION_API_KEY_DEV`     | Dev: `REIMBURSEMENT_AUTOMATION_API_KEY` in `secrets-config.json`        |
+| `REIMBURSEMENT_AUTOMATION_API_KEY_STAGING` | Staging                                                                  |
+| `REIMBURSEMENT_AUTOMATION_API_KEY_PROD`    | Production                                                               |
+
+Extend `iac/configs/secrets/secrets-config.json` and mirror new keys in `iac/enums/environment-vars.ts` so CDK validation stays in sync. For **local synth/deploy without real secrets**, placeholders from CDK are enough; real values are only pushed from CI.
+
+**Disable** the managed secret for sandbox stacks via `"secrets": { "enabled": false }` in `reimbursement-automation-stack-config.json` (skips reading secrets JSON and creating the secret).
 
 ### One-time: CDK bootstrap
 
 In each AWS account/region you deploy to, run once (with credentials that can create the bootstrap stack). Get your account ID from the AWS console or run `aws sts get-caller-identity`:
 
 ```bash
-cd iac && bun run build && bunx cdk bootstrap aws://YOUR_ACCOUNT_ID/us-west-2
+cd iac && bun install && bun run build && bun run cdk bootstrap aws://YOUR_ACCOUNT_ID/us-west-2
 ```
 
 ---
@@ -54,7 +68,12 @@ In AWS IAM:
         "iam:*",
         "lambda:*",
         "s3:*",
-        "sts:*"
+        "sts:*",
+        "dynamodb:*",
+        "secretsmanager:*",
+        "states:*",
+        "events:*",
+        "scheduler:*"
       ],
       "Resource": "*"
     }
@@ -79,14 +98,17 @@ In the repo: **Settings → Secrets and variables → Actions**.
 
 The workflow uses these in “Configure AWS credentials” and sets `CDK_DEFAULT_ACCOUNT` / `CDK_DEFAULT_REGION` for CDK.
 
+**IAC CI** (`.github/workflows/ci.yml`) runs `lint`, `format:check`, `build`, and a pinned **`bunx aws-cdk@… synth`** (see `iac/package.json` → `aws-cdk`) so the CLI understands the **cloud assembly** format produced by the repo’s `aws-cdk-lib`. **Deploy** jobs use the same pinned CLI for `deploy`.
+
 ### 3. Bootstrap CDK (one-time per account/region)
 
 From your machine (or a one-off job) with AWS credentials configured:
 
 ```bash
 cd iac
+bun install
 bun run build
-bunx cdk bootstrap aws://ACCOUNT_ID/us-west-2
+bun run cdk bootstrap aws://ACCOUNT_ID/us-west-2
 ```
 
 Replace `ACCOUNT_ID` with the same value as `AWS_ACCOUNT_ID_*`. After that, the GitHub Actions deploy step can run `cdk deploy` successfully.
@@ -137,9 +159,9 @@ No `AWS_ACCESS_KEY_ID_*` or `AWS_SECRET_ACCESS_KEY_*` secrets are needed; the ro
 
 ## Summary
 
-| Method        | Pros                          | Cons                         |
-|---------------|-------------------------------|------------------------------|
-| **A: IAM user** | Simple, works with current workflow | Long-lived keys; must rotate and secure |
-| **B: OIDC**     | No stored keys; short-lived credentials | One-time setup of OIDC provider + role |
+| Method          | Pros                                    | Cons                                    |
+| --------------- | --------------------------------------- | --------------------------------------- |
+| **A: IAM user** | Simple, works with current workflow     | Long-lived keys; must rotate and secure |
+| **B: OIDC**     | No stored keys; short-lived credentials | One-time setup of OIDC provider + role  |
 
 You do need **some** IAM identity (user or role) that has permission to run CDK deploy and to create/update the Lambda and related resources. Option A uses an IAM user and keys in GitHub secrets; Option B uses an IAM role and GitHub OIDC so Actions assume the role with no keys.

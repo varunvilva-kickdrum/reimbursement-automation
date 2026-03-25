@@ -1,0 +1,58 @@
+{
+  "removalPolicy": "destroy",
+  "lambda": {
+    "functionsPath": "app/lambda/src",
+    "buildDirectory": ".build",
+    "defaultTimeout": 30,
+    "defaultMemorySize": 128,
+    "functions": [
+      {
+        "name": "test_lambda",
+        "timeout": 30,
+        "memorySize": 128,
+        "s3Buckets": [],
+        "lockTableAccess": false,
+        "secretsAccess": false
+      }
+    ]
+  },
+  "s3": {
+    "buckets": [
+      {
+        "name": "data",
+        "versioned": true
+      }
+    ]
+  },
+  "dynamodb": {
+    "lockTable": {
+      "name": "execution-locks",
+      "partitionKeyName": "lock_key",
+      "ttlAttributeName": "ttl"
+    }
+  },
+  "secrets": {
+    "enabled": true
+  },
+  "stepFunction": {
+    "enabled": true,
+    "templatePath": "templates/step-functions",
+    "tracingEnabled": false,
+    "invokeLambdaFunctionNames": ["test_lambda"],
+    "stateMachines": [
+      {
+        "name": "pipeline",
+        "enabled": true,
+        "description": "reimbursement-automation orchestration (test Lambda smoke task)"
+      }
+    ]
+  },
+  "eventBridge": {
+    "enabled": false,
+    "schedules": []
+  },
+  "tags": {
+    "Project": "reimbursement-automation",
+    "ManagedBy": "CDK"
+  }
+}

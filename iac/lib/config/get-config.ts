@@ -11,7 +11,11 @@ import {
 } from '../../constants';
 import { ConfigDirectory, ConfigFileName, EnvironmentType } from '../../enums';
 import { IacErrors } from '../errors';
-import type { CommonConfig, Config, ReimbursementStackConfig } from './config';
+import type { CommonConfig, Config } from './config';
+import {
+  reimbursementStackSchema,
+  type ReimbursementStackConfig,
+} from './reimbursement-automation-stack-schema';
 
 function loadJsonConfig(filePath: string): Record<string, unknown> {
   if (!fs.existsSync(filePath)) {
@@ -126,11 +130,19 @@ function loadStackConfig(configDir: string, environment: string): ReimbursementS
   );
   const defaultConfig = loadJsonConfig(defaultPath) as Record<string, unknown>;
   const envConfig = loadJsonConfig(envPath) as Record<string, unknown>;
-  const merged = deepMerge(defaultConfig, envConfig) as unknown as ReimbursementStackConfig;
-  if (!merged.lambda) {
-    throw IacErrors.config(ConfigMessage.missingStackLambda, defaultPath);
+  const merged = deepMerge(defaultConfig, envConfig);
+  const parsed = reimbursementStackSchema.safeParse(merged);
+  if (!parsed.success) {
+    const details = parsed.error.issues
+      .map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`)
+      .join('; ');
+    throw IacErrors.config(
+      ConfigMessage.invalidMergedStackConfig(details),
+      defaultPath,
+      parsed.error
+    );
   }
-  return merged;
+  return parsed.data;
 }
 
 export function getConfig(app: App, configDir: string): Config {

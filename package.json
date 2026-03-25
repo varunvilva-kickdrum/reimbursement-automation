@@ -1,5 +1,5 @@
 {
-  "name": "reimbursements-pipeline",
+  "name": "reimbursement-automation",
   "private": true,
   "scripts": {
     "prepare": "husky",

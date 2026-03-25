@@ -1,7 +1,8 @@
 import { AccountId } from './validation';
 
 export const ConfigMessage = {
-  missingStackLambda: 'Missing stack.lambda in config. Add default/reimbursementStackConfig.json',
+  invalidMergedStackConfig: (details: string) =>
+    `Invalid reimbursement-automation-stack-config after merge: ${details}`,
   missingAccount: (environment: string) =>
     `Missing AWS account for environment '${environment}'. Add to cdk.json: context.environments.${environment}.account`,
   invalidAccountId: (account: string) =>

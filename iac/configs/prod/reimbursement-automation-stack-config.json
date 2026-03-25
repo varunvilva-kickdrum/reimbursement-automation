@@ -1,4 +1,5 @@
 {
+  "removalPolicy": "retain",
   "lambda": {
     "functions": [{ "name": "test_lambda", "enabled": true }]
   }
