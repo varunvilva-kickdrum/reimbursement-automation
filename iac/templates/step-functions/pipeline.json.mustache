@@ -1,21 +1,99 @@
 {
-  "Comment": "reimbursement-automation pipeline — invokes primary Lambda (smoke / orchestration entry)",
-  "StartAt": "RunTestLambda",
+  "Comment": "reimbursement-automation pipeline — ingestion, extraction, validation",
+  "StartAt": "RunIngestionLambda",
   "States": {
-    "RunTestLambda": {
+    "RunIngestionLambda": {
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Parameters": {
-        "FunctionName": {{#GetLambdaArn}}test_lambda{{/GetLambdaArn}},
+        "FunctionName": {{#GetLambdaArn}}ingestion_lambda{{/GetLambdaArn}},
         "Payload": {
           "source": "step-functions",
-          "environment": "{{Environment}}"
+          "environment": "{{Environment}}",
+          "input.$": "$"
         }
       },
       "ResultSelector": {
         "statusCode.$": "$.Payload.statusCode",
         "body.$": "$.Payload.body"
       },
+      "ResultPath": "$.ingestion",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleApplicationError"
+        }
+      ],
+      "Next": "RunExtractionLambda"
+    },
+    "RunExtractionLambda": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": {{#GetLambdaArn}}extraction_lambda{{/GetLambdaArn}},
+        "Payload": {
+          "source": "step-functions",
+          "environment": "{{Environment}}",
+          "input.$": "$"
+        }
+      },
+      "ResultSelector": {
+        "statusCode.$": "$.Payload.statusCode",
+        "body.$": "$.Payload.body"
+      },
+      "ResultPath": "$.extraction",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleApplicationError"
+        }
+      ],
+      "Next": "RunValidationLambda"
+    },
+    "RunValidationLambda": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": {{#GetLambdaArn}}validation_lambda{{/GetLambdaArn}},
+        "Payload": {
+          "source": "step-functions",
+          "environment": "{{Environment}}",
+          "input.$": "$"
+        }
+      },
+      "ResultSelector": {
+        "statusCode.$": "$.Payload.statusCode",
+        "body.$": "$.Payload.body"
+      },
+      "ResultPath": "$.validation",
       "Retry": [
         {
           "ErrorEquals": [
@@ -41,7 +119,7 @@
     "HandleApplicationError": {
       "Type": "Fail",
       "Error": "PipelineTaskFailed",
-      "Cause": "RunTestLambda failed or returned an error after retries; see execution history and $.error for details."
+      "Cause": "A pipeline task failed after retries; see execution history and $.error for details."
     }
   }
 }

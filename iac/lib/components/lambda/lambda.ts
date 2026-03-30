@@ -45,6 +45,7 @@ export class Lambda extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
+    const roleMap = props.roleMap;
     const toCreate = lambdaConfig.functions.filter((f) => f.enabled !== false);
     for (const functionConfig of toCreate) {
       LambdaBuilder.validateFunctionFolder(this.resolvedFunctionsPath, functionConfig.name);
@@ -53,6 +54,9 @@ export class Lambda extends Construct {
         functionConfig.name
       );
       const resourceName = getResourceName(functionConfig.name, this.config);
+      const customRole =
+        functionConfig.role && roleMap ? roleMap.get(functionConfig.role) : undefined;
+
       const fn = new LambdaFunction(this, functionConfig.name, {
         functionName: resourceName,
         runtime: lambdaRuntimeBundle.runtime,
@@ -61,6 +65,7 @@ export class Lambda extends Construct {
         code: buildResult.code,
         timeout: Duration.seconds(functionConfig.timeout ?? lambdaConfig.defaultTimeout),
         memorySize: functionConfig.memorySize ?? lambdaConfig.defaultMemorySize,
+        ...(customRole ? { role: customRole } : {}),
       });
       fn.addLayers(sharedLayer);
       this.functions.push({

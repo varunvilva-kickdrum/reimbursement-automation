@@ -20,7 +20,7 @@
     "defaultRegion": "us-west-2",
     "environments": {
       "dev": {
-        "account": "REPLACE_WITH_DEV_ACCOUNT",
+        "account": "503226040441",
         "region": "us-west-2",
         "profile": "default"
       },
