@@ -19,9 +19,21 @@ export type S3StackConfig = ReimbursementStackConfig['s3'];
 
 export type DynamoDbLockTableConfig = ReimbursementStackConfig['dynamodb']['lockTable'];
 
+export type DynamoDbClaimsTableConfig = NonNullable<
+  ReimbursementStackConfig['dynamodb']['claimsTable']
+>;
+
 export type DynamoDbStackConfig = ReimbursementStackConfig['dynamodb'];
 
 export type SecretsStackConfig = NonNullable<ReimbursementStackConfig['secrets']>;
+
+export type SqsStackConfig = NonNullable<ReimbursementStackConfig['sqs']>;
+
+export type SnsStackConfig = NonNullable<ReimbursementStackConfig['sns']>;
+
+export type ApiGatewayStackConfig = NonNullable<ReimbursementStackConfig['apiGateway']>;
+
+export type PipesStackConfig = NonNullable<ReimbursementStackConfig['pipes']>;
 
 export type StateMachineStackConfig =
   ReimbursementStackConfig['stepFunction']['stateMachines'][number];

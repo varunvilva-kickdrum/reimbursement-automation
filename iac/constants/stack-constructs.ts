@@ -1,6 +1,10 @@
 export const ConstructId = {
   Lambda: 'Lambda',
   SharedLayer: 'SharedLayer',
+  Sqs: 'Sqs',
+  Sns: 'Sns',
+  ApiGateway: 'ApiGateway',
+  Pipes: 'Pipes',
 } as const;
 
 export const StackNaming = {

@@ -1,7 +1,4 @@
 {
-  "lambda": {
-    "functions": [{ "name": "test_lambda", "enabled": true }]
-  },
   "stepFunction": {
     "tracingEnabled": true
   }

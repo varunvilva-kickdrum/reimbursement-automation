@@ -22,6 +22,8 @@ export const reimbursementStackSchema = z
             s3Buckets: z.array(z.string().min(1)).optional(),
             lockTableAccess: z.boolean().optional(),
             secretsAccess: z.boolean().optional(),
+            /** IAM role slug from IamRoleSlug; when set the Lambda uses a custom role instead of CDK-generated one. */
+            role: z.string().min(1).optional(),
           })
         )
         .min(1),
@@ -42,10 +44,40 @@ export const reimbursementStackSchema = z
         partitionKeyName: z.string().optional(),
         ttlAttributeName: z.string().optional(),
       }),
+      claimsTable: z
+        .object({
+          name: z.string().min(1),
+          partitionKeyName: z.string().min(1),
+          sortKeyName: z.string().min(1),
+        })
+        .optional(),
     }),
     secrets: z
       .object({
         enabled: z.boolean().optional(),
+      })
+      .optional(),
+    sqs: z
+      .object({
+        enabled: z.boolean(),
+        queueName: z.string().min(1),
+        dlqEnabled: z.boolean().optional(),
+      })
+      .optional(),
+    sns: z
+      .object({
+        enabled: z.boolean(),
+        topicName: z.string().min(1),
+      })
+      .optional(),
+    apiGateway: z
+      .object({
+        enabled: z.boolean(),
+      })
+      .optional(),
+    pipes: z
+      .object({
+        enabled: z.boolean(),
       })
       .optional(),
     stepFunction: z.object({
