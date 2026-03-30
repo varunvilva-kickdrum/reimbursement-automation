@@ -100,9 +100,13 @@ export class ReimbursementStack extends Stack {
     for (const fnConfig of fns) {
       if (fnConfig.role) {
         const role = this.iam.getRoleBySlug(fnConfig.role);
-        if (role) {
-          roleMap.set(fnConfig.role, role);
+        if (!role) {
+          throw IacErrors.validation(
+            `Lambda "${fnConfig.name}" references unknown IAM role slug "${fnConfig.role}"`,
+            'role'
+          );
         }
+        roleMap.set(fnConfig.role, role);
       }
     }
 

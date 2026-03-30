@@ -17,6 +17,7 @@
         "statusCode.$": "$.Payload.statusCode",
         "body.$": "$.Payload.body"
       },
+      "ResultPath": "$.ingestion",
       "Retry": [
         {
           "ErrorEquals": [
@@ -54,6 +55,7 @@
         "statusCode.$": "$.Payload.statusCode",
         "body.$": "$.Payload.body"
       },
+      "ResultPath": "$.extraction",
       "Retry": [
         {
           "ErrorEquals": [
@@ -91,6 +93,7 @@
         "statusCode.$": "$.Payload.statusCode",
         "body.$": "$.Payload.body"
       },
+      "ResultPath": "$.validation",
       "Retry": [
         {
           "ErrorEquals": [
